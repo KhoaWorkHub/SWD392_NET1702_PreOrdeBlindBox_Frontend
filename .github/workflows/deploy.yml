@@ -12,23 +12,24 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Setup Project and Install Dependencies
+      - name: Install Vercel CLI
+        run: npm i -g vercel@latest
+
+      - name: Link Project to Vercel
         run: |
-          npm i -g vercel@latest
-          mkdir -p .vercel
-          echo "{\"orgId\":\"team_V7zmmutFYC2hzYcP4jCNlkEV\",\"projectId\":\"prj_FExNby7mspezanYBCElBBKYNDjdG\"}" > .vercel/project.json
+          rm -rf .vercel
+          vercel link --token ${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy to Vercel
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_PROJECT_ID: prj_FExNby7mspezanYBCElBBKYNDjdG
-          VERCEL_ORG_ID: team_V7zmmutFYC2hzYcP4jCNlkEV
         run: |
-          vercel deploy --token ${{ secrets.VERCEL_TOKEN }} --prod --force --yes
+          vercel deploy --prod --force --yes --token ${{ secrets.VERCEL_TOKEN }}
