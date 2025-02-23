@@ -26,11 +26,26 @@ jobs:
       - name: Build Project
         run: bun run build
 
+      - name: Create Deploy Script
+        run: |
+          cat > deploy.sh << 'EOF'
+          #!/bin/bash
+          
+          # Install Vercel CLI
+          npm install -g vercel@latest
+          
+          # Create Vercel config directory and files
+          mkdir -p ~/.vercel
+          echo "{\"projectId\":\"prj_FExNby7mspezanYBCElBBKYNDjdG\",\"orgId\":\"team_V7zmmutFYC2hzYcP4jCNlkEV\"}" > .vercel/project.json
+          echo "{\"token\":\"$VERCEL_TOKEN\"}" > ~/.vercel/credentials.json
+          
+          # Attempt deployment
+          vercel --token $VERCEL_TOKEN --prod -y --confirm
+          EOF
+          
+          chmod +x deploy.sh
+
       - name: Deploy to Vercel
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: team_V7zmmutFYC2hzYcP4jCNlkEV
-          VERCEL_PROJECT_ID: prj_FExNby7mspezanYBCElBBKYNDjdG
-        run: |
-          npm install -g vercel@latest
-          vercel deploy --cwd . --token=$VERCEL_TOKEN --prod --confirm --yes
+        run: ./deploy.sh
