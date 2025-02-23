@@ -5,14 +5,24 @@ import {
   BellOutlined, 
   ShoppingOutlined 
 } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
+  const navigate = useNavigate();
+
+  const handleSignInClick = () => {
+    navigate('/login');
+  };
+
   return (
     <nav className="w-full border-b border-gray-200 bg-white">
       <div className="container mx-auto px-4 flex items-center justify-between h-16">
         {/* Logo */}
         <div className="flex items-center">
-          <div className="bg-red-600 px-3 py-1">
+          <div 
+            className="bg-red-600 px-3 py-1 cursor-pointer" 
+            onClick={() => navigate('/')}
+          >
             <span className="text-white font-bold text-lg">POP MART</span>
           </div>
         </div>
@@ -53,7 +63,12 @@ const Navbar = () => {
           </div>
           
           {/* Account */}
-          <Button type="text" icon={<UserOutlined />} className="flex items-center">
+          <Button 
+            type="text" 
+            icon={<UserOutlined />} 
+            className="flex items-center"
+            onClick={handleSignInClick}
+          >
             <span className="ml-1 text-sm">Sign in / Register</span>
           </Button>
           
