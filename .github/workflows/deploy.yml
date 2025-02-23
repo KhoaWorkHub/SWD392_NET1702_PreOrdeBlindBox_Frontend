@@ -3,11 +3,11 @@ name: Deploy to Vercel
 on:
   push:
     branches:
-      - main  # Change to your main branch if needed
+      - main  
 
   pull_request:
     branches:
-      - main  # Runs workflow for PRs targeting `main`  
+      - main  
 
 jobs:
   deploy:
@@ -28,11 +28,11 @@ jobs:
       - name: 🔨 Build Project
         run: bun run build
 
+      - name: 📥 Install Vercel CLI
+        run: npm install -g vercel
+
       - name: 🔗 Link Vercel Project
-        run: |
-          vercel link --yes --token=${{ secrets.VERCEL_TOKEN }}  
+        run: vercel link --yes --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: 🚀 Deploy to Vercel
-        run: |
-          npm install -g vercel
-          vercel deploy --prod --yes --token=${{ secrets.VERCEL_TOKEN }} 
+        run: vercel deploy --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
