@@ -26,15 +26,10 @@ jobs:
       - name: Build Project
         run: bun run build
 
-      - name: Setup Vercel
-        run: |
-          mkdir -p ~/.vercel
-          echo "{\"version\":2}" > ~/.vercel/config.json
-          echo "{\"projectId\":\"prj_FExNby7mspezanYBCElBBKYNDjdG\",\"orgId\":\"team_V7zmmutFYC2hzYcP4jCNlkEV\"}" > .vercel/project.json
-          echo "{\"token\":\"${{ secrets.VERCEL_TOKEN }}\"}" > ~/.vercel/credentials.json
-
       - name: Deploy to Vercel
-        run: |
-          export NODE_OPTIONS="--max-old-space-size=4096"
-          npm i -g vercel@latest
-          vercel --yes --no-clipboard --token ${{ secrets.VERCEL_TOKEN }}
+        uses: vercel/actions-deploy@v1
+        with:
+          token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: team_V7zmmutFYC2hzYcP4jCNlkEV  # Required
+          vercel-project-id: prj_FExNby7mspezanYBCElBBKYNDjdG  # Required
+          working-directory: .
