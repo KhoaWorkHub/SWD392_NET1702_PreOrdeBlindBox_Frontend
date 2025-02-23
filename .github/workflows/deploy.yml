@@ -12,6 +12,16 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      CI: true
+      VERCEL_TELEMETRY_DISABLED: 1
+      # Force non-interactive mode
+      FORCE_COLOR: "0"
+      NPM_CONFIG_UPDATE_NOTIFIER: "false"
+
     steps:
       - name: 🚀 Checkout Repository
         uses: actions/checkout@v4
@@ -27,11 +37,13 @@ jobs:
       - name: 🔨 Build Project
         run: bun run build
 
+      - name: 📥 Configure Vercel CLI
+        run: |
+          export NODE_ENV=production
+          npm install -g vercel@latest
+          mkdir -p ~/.vercel
+          echo "{\"orgId\":\"$VERCEL_ORG_ID\",\"projectId\":\"$VERCEL_PROJECT_ID\"}" > ~/.vercel/project.json
+          echo "{\"token\":\"$VERCEL_TOKEN\"}" > ~/.vercel/credentials.json
+
       - name: 🚀 Deploy to Vercel
-        uses: amondnet/vercel-action@v20
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          working-directory: ./
-          vercel-args: '--prod'
+        run: vercel deploy --prod -y --cwd . --token=$VERCEL_TOKEN
