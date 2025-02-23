@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main  
-
   pull_request:
     branches:
       - main  
@@ -12,6 +11,10 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
     steps:
       - name: 🚀 Checkout Repository
@@ -27,13 +30,19 @@ jobs:
 
       - name: 🔨 Build Project
         run: bun run build
+        env:
+          CI: true
 
       - name: 📥 Install Vercel CLI
-        run: npm install -g vercel
+        run: npm install -g vercel@latest
 
       - name: 🔗 Link Vercel Project
-        run: |
-          vercel link --project ${{ secrets.VERCEL_PROJECT_ID }} --org ${{ secrets.VERCEL_ORG_ID }} --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel link --confirm --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: 🚀 Deploy to Vercel
-        run: vercel deploy --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
+        run: |
+          if [ "${{ github.event_name }}" == "push" ]; then
+            vercel deploy --prod --confirm --token=${{ secrets.VERCEL_TOKEN }} --yes
+          else
+            vercel deploy --confirm --token=${{ secrets.VERCEL_TOKEN }} --yes
+          fi
