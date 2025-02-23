@@ -21,12 +21,14 @@ jobs:
           node-version: '20'
 
       - name: Install Vercel CLI
-        run: npm i -g vercel@latest
+        run: npm install -g vercel@latest
 
       - name: Link Project to Vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
           rm -rf .vercel
-          vercel link --token ${{ secrets.VERCEL_TOKEN }}
+          vercel link --yes --token ${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy to Vercel
         env:
