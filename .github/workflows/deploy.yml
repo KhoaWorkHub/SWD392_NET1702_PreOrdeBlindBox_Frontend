@@ -28,7 +28,11 @@ jobs:
       - name: 🔨 Build Project
         run: bun run build
 
+      - name: 🔗 Link Vercel Project
+        run: |
+          vercel link --yes --token=${{ secrets.VERCEL_TOKEN }}  
+
       - name: 🚀 Deploy to Vercel
         run: |
           npm install -g vercel
-          vercel deploy --prod --yes --token=${{ secrets.VERCEL_TOKEN }} --project preorder-blindbox
+          vercel deploy --prod --yes --token=${{ secrets.VERCEL_TOKEN }} 
