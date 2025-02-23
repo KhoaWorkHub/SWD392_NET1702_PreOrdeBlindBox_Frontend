@@ -14,38 +14,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          bun-version: latest
+          node-version: '20'
 
-      - name: Install Dependencies
-        run: bun install
-
-      - name: Build Project
-        run: bun run build
-
-      - name: Setup Vercel
+      - name: Setup Project and Install Dependencies
         run: |
-          mkdir -p ~/.vercel
-          cat > ~/.vercel/config.json << EOF
-          {
-            "collectMetrics": false,
-            "projectDefaults": {
-              "framework": null
-            }
-          }
-          EOF
-          cat > ~/.vercel/credentials.json << EOF
-          {
-            "token": "${{ secrets.VERCEL_TOKEN }}"
-          }
-          EOF
+          npm i -g vercel@latest
+          mkdir -p .vercel
+          echo "{\"orgId\":\"team_V7zmmutFYC2hzYcP4jCNlkEV\",\"projectId\":\"prj_FExNby7mspezanYBCElBBKYNDjdG\"}" > .vercel/project.json
 
       - name: Deploy to Vercel
         env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_PROJECT_ID: prj_FExNby7mspezanYBCElBBKYNDjdG
           VERCEL_ORG_ID: team_V7zmmutFYC2hzYcP4jCNlkEV
-          VERCEL_CLI_NO_METRICS: 1
         run: |
-          npx vercel@latest deploy --prod
+          vercel deploy --token ${{ secrets.VERCEL_TOKEN }} --prod --force --yes
