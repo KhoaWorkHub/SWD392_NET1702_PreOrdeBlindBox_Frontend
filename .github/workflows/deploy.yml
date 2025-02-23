@@ -14,34 +14,24 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Checkout code
-        uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          node-version: '20'
 
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
-      - name: Install Vercel CLI
-        run: npm install -g vercel@latest
 
-      - name: Link Project to Vercel
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       - name: Link Project to Vercel
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
           rm -rf .vercel
-          vercel link --yes --token ${{ secrets.VERCEL_TOKEN }}
+          vercel link --project ${{ secrets.VERCEL_PROJECT_ID }} --org ${{ secrets.VERCEL_ORG_ID }} --yes --token ${{ secrets.VERCEL_TOKEN }}
+
       - name: Deploy to Vercel
         env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
           vercel deploy --prod --force --yes --token ${{ secrets.VERCEL_TOKEN }}
