@@ -25,40 +25,27 @@ jobs:
       - name: Build Project
         run: bun run build
 
+      - name: Setup Vercel
+        run: |
+          mkdir -p ~/.vercel
+          cat > ~/.vercel/config.json << EOF
+          {
+            "collectMetrics": false,
+            "projectDefaults": {
+              "framework": null
+            }
+          }
+          EOF
+          cat > ~/.vercel/credentials.json << EOF
+          {
+            "token": "${{ secrets.VERCEL_TOKEN }}"
+          }
+          EOF
+
       - name: Deploy to Vercel
         env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: prj_FExNby7mspezanYBCElBBKYNDjdG
+          VERCEL_ORG_ID: team_V7zmmutFYC2hzYcP4jCNlkEV
+          VERCEL_CLI_NO_METRICS: 1
         run: |
-          # Create deployment via API
-          DEPLOY_RESPONSE=$(curl -X POST "https://api.vercel.com/v13/deployments" \
-            -H "Authorization: Bearer $VERCEL_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d '{
-              "name": "preorder-blindbox",
-              "project": "prj_FExNby7mspezanYBCElBBKYNDjdG",
-              "target": "production",
-              "routes": [{"src": "/(.*)", "dest": "/"}]
-            }')
-          
-          # Extract deployment ID
-          DEPLOYMENT_ID=$(echo $DEPLOY_RESPONSE | jq -r '.id')
-          
-          echo "Deployment created with ID: $DEPLOYMENT_ID"
-          
-          # Wait for deployment to complete
-          while true; do
-            STATUS=$(curl -s "https://api.vercel.com/v13/deployments/$DEPLOYMENT_ID" \
-              -H "Authorization: Bearer $VERCEL_TOKEN" \
-              | jq -r '.readyState')
-            
-            if [ "$STATUS" = "READY" ]; then
-              echo "Deployment completed successfully!"
-              break
-            elif [ "$STATUS" = "ERROR" ]; then
-              echo "Deployment failed!"
-              exit 1
-            fi
-            
-            echo "Waiting for deployment to complete..."
-            sleep 10
-          done
+          npx vercel@latest deploy --prod
