@@ -11,6 +11,11 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      VERCEL_TELEMETRY_DISABLED: 1
 
     steps:
       - name: 🚀 Checkout Repository
@@ -28,18 +33,26 @@ jobs:
         run: bun run build
 
       - name: 📥 Deploy to Vercel
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-          VERCEL_TELEMETRY_DISABLED: 1
         run: |
           npm install -g vercel
-          echo "Installing Vercel CLI..."
-          vercel --version
-          echo "Configuring Vercel..."
-          vercel pull --yes --environment=production
-          echo "Building project..."
-          vercel build --prod
-          echo "Deploying to Vercel..."
-          vercel deploy --prebuilt --prod -y
+          
+          # Create deployment script
+          cat > deploy.sh << 'EOF'
+          # Save deployment output and errors to files
+          vercel deploy --force --yes --token=$VERCEL_TOKEN --prod > deployment-url.txt 2> error.txt
+
+          # Check exit code
+          code=$?
+          if [ $code -eq 0 ]; then
+            deploymentUrl=$(cat deployment-url.txt)
+            echo "✅ Deployment successful: $deploymentUrl"
+          else
+            errorMessage=$(cat error.txt)
+            echo "❌ Deployment failed: $errorMessage"
+            exit 1
+          fi
+          EOF
+
+          # Make script executable and run it
+          chmod +x deploy.sh
+          ./deploy.sh
