@@ -1,0 +1,168 @@
+.ant-btn-link {
+    color: #989a9c !important;
+  }
+  .ant-btn-link:hover {
+    color: #fff !important;
+  }
+  .ant-btn-link:focus {
+    color: #989a9c !important;
+  }
+
+  /* Footer.css */
+
+.footer-contact-box {
+    border: 1px solid #333;
+    padding: 16px;
+    margin-bottom: 16px;
+    background-color: transparent;
+  }
+  
+  .footer-contact-box p {
+    margin: 0;
+  }
+  
+  .footer-contact-box .time {
+    color: #666;
+    font-size: 14px;
+    margin: 4px 0;
+  }
+  
+  .footer-contact-box .contact-link {
+    color: #989a9c !important;
+    padding: 0 !important;
+    height: auto !important;
+    line-height: 1.5 !important;
+  }
+  
+  .footer-contact-box .contact-link:hover {
+    color: #0085ff !important;
+  }
+  
+  .footer-links .ant-space-vertical {
+    width: 100% !important;
+  }
+  
+  .footer-links .ant-btn {
+    padding: 0 !important;
+    height: auto !important;
+    line-height: 1.5 !important;
+    text-align: left !important;
+    color: #989a9c !important;
+  }
+  
+  .footer-links .ant-btn:hover {
+    color: #0066cc !important;
+  }
+  
+  .email-signup-input {
+    border: 1px solid #333 !important;
+    background-color: transparent !important;
+    border-radius: 0 !important;
+    color: white !important;
+    border-right: none !important;
+  }
+  
+  .email-signup-input::placeholder {
+    color: #666;
+  }
+  
+  .email-signup-button {
+    border: 1px solid #333 !important;
+    background: transparent !important;
+    color: white !important;
+    border-radius: 0 !important;
+    border-left: none !important;
+  }
+  
+  .email-signup-button:hover {
+    background: #333 !important;
+  }
+  
+  .language-button {
+    border: 1px solid #333 !important;
+    color: white !important;
+    background: transparent !important;
+    height: auto !important;
+    padding: 8px 16px !important;
+    width: 100% !important;
+    text-align: left !important;
+    margin-top: 8px !important;
+    border-radius: 0 !important;
+  }
+  
+  .language-button:hover {
+    background: #333 !important;
+  }
+  
+  .social-icons {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    align-items: center;
+  }
+  
+  .social-icons .anticon {
+    font-size: 20px;
+    color: #333;
+    cursor: pointer;
+  }
+  
+  .social-icons .anticon:hover {
+    color: #666;
+  }
+  
+  /* Override Ant Design button styles */
+  .ant-btn-link {
+    color: #989a9c !important;
+    text-align: left !important;
+    padding: 0 !important;
+  }
+  
+  .ant-btn-link:hover {
+    color: #0066cc !important;
+  }
+  
+  /* Fix input group styles */
+  .ant-input-group {
+    display: flex !important;
+    border: 1px solid #333;
+  }
+  
+  .ant-input-group input {
+    flex: 1;
+  }
+  
+  /* Footer payment section */
+  .footer-payment {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 16px;
+  }
+  
+  .footer-payment img {
+    height: 24px;
+    width: auto;
+  }
+  
+  /* Footer copyright text */
+  .footer-copyright {
+    text-align: center;
+    color: #666;
+    margin-bottom: 16px;
+  }
+  
+  /* Contact section button links */
+  .contact-section a {
+    color: #0066cc;
+    text-decoration: none;
+  }
+  
+  .contact-section a:hover {
+    color: #0085ff;
+  }
+  
+  /* Override Space component width */
+  .ant-space {
+    width: 100% !important;
+  }
