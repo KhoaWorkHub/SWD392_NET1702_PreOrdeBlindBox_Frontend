@@ -11,11 +11,6 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
-    env:
-      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
     steps:
       - name: 🚀 Checkout Repository
@@ -32,11 +27,12 @@ jobs:
       - name: 🔨 Build Project
         run: bun run build
 
-      - name: 📥 Configure Vercel
+      - name: 📥 Deploy to Vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_NAME: ${{ secrets.VERCEL_PROJECT_NAME }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
           npm install -g vercel
-          vercel pull --yes --environment=production --token=$VERCEL_TOKEN
-          vercel build --prod --token=$VERCEL_TOKEN
-
-      - name: 🚀 Deploy to Vercel
-        run: vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
+          vercel --token $VERCEL_TOKEN --yes --prod
