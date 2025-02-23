@@ -9,7 +9,7 @@ on:
       - main
 
 jobs:
-  Deploy-Production:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,8 +26,39 @@ jobs:
         run: bun run build
 
       - name: Deploy to Vercel
-        uses: vercel/actions/deploy@v1
-        with:
-          token: ${{ secrets.VERCEL_TOKEN }}
-          org-id: team_V7zmmutFYC2hzYcP4jCNlkEV
-          project-id: prj_FExNby7mspezanYBCElBBKYNDjdG
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          # Create deployment via API
+          DEPLOY_RESPONSE=$(curl -X POST "https://api.vercel.com/v13/deployments" \
+            -H "Authorization: Bearer $VERCEL_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "name": "preorder-blindbox",
+              "project": "prj_FExNby7mspezanYBCElBBKYNDjdG",
+              "target": "production",
+              "routes": [{"src": "/(.*)", "dest": "/"}]
+            }')
+          
+          # Extract deployment ID
+          DEPLOYMENT_ID=$(echo $DEPLOY_RESPONSE | jq -r '.id')
+          
+          echo "Deployment created with ID: $DEPLOYMENT_ID"
+          
+          # Wait for deployment to complete
+          while true; do
+            STATUS=$(curl -s "https://api.vercel.com/v13/deployments/$DEPLOYMENT_ID" \
+              -H "Authorization: Bearer $VERCEL_TOKEN" \
+              | jq -r '.readyState')
+            
+            if [ "$STATUS" = "READY" ]; then
+              echo "Deployment completed successfully!"
+              break
+            elif [ "$STATUS" = "ERROR" ]; then
+              echo "Deployment failed!"
+              exit 1
+            fi
+            
+            echo "Waiting for deployment to complete..."
+            sleep 10
+          done
