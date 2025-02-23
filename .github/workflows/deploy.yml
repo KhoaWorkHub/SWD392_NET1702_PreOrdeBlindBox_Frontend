@@ -30,9 +30,16 @@ jobs:
       - name: 📥 Deploy to Vercel
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_PROJECT_NAME: ${{ secrets.VERCEL_PROJECT_NAME }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_TELEMETRY_DISABLED: 1
         run: |
           npm install -g vercel
-          vercel --token $VERCEL_TOKEN --yes --prod
+          echo "Installing Vercel CLI..."
+          vercel --version
+          echo "Configuring Vercel..."
+          vercel pull --yes --environment=production
+          echo "Building project..."
+          vercel build --prod
+          echo "Deploying to Vercel..."
+          vercel deploy --prebuilt --prod -y
