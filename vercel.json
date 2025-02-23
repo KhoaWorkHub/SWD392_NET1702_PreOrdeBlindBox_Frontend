@@ -1,0 +1,11 @@
+{
+    "version": 2,
+    "public": true,
+    "github": {
+      "enabled": true,
+      "silent": true
+    },
+    "buildCommand": "bun run build",
+    "outputDirectory": "dist",
+    "installCommand": "bun install"
+  }
