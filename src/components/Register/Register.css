@@ -1,0 +1,71 @@
+/* Register.css */
+.button-checkbox {
+    margin-top: 2px;
+    margin-right: 5px;
+}
+/* Override Ant Design Steps component */
+.ant-steps {
+    margin-bottom: 20px;
+  }
+  
+  .ant-steps-item-title {
+    font-size: 14px !important;
+  }
+  
+  .ant-steps-item-active .ant-steps-item-title {
+    font-weight: 600 !important;
+  }
+  
+  /* Override Ant Design Form fields */
+  .ant-input, .ant-select, .ant-picker {
+    border-radius: 4px !important;
+  }
+  
+  .ant-input:focus, .ant-select-focused, .ant-picker-focused {
+    border-color: #000 !important;
+    box-shadow: none !important;
+  }
+  
+  /* Override buttons */
+  .ant-btn-primary {
+    background-color: #000 !important;
+    border-color: #000 !important;
+  }
+  
+  .ant-btn-primary:hover {
+    background-color: #333 !important;
+    border-color: #333 !important;
+  }
+  
+  /* Custom checkbox */
+  input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  
+  /* Make input placeholders a bit lighter */
+  ::placeholder {
+    color: #aaa !important;
+    opacity: 1;
+  }
+  
+  /* Style the divider */
+  .ant-divider-inner-text {
+    font-size: 14px;
+    color: #666;
+  }
+  
+  /* Ensure minimum height for step content */
+  .step-content {
+    min-height: 250px;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 640px) {
+    .ant-steps-item-title {
+      font-size: 12px !important;
+    }
+  }
