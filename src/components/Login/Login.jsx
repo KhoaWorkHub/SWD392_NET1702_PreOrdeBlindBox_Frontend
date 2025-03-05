@@ -47,7 +47,7 @@ export const Login = () => {
               />
               {selectedCountry}
             </div>
-            <span className="text-gray-400">▼</span>
+            <span className="text-gray-400 cursor-pointer">▼</span>
           </button>
           
           {isDropdownOpen && (
@@ -78,7 +78,7 @@ export const Login = () => {
         />
 
         {/* Continue Button */}
-        <button className="w-full h-12 bg-black text-white font-medium rounded mb-8">
+        <button className="w-full h-12 bg-black text-white font-medium rounded mb-8 cursor-pointer" style={{ color: 'var(--color-white)', marginTop: '5px' }}>
           CONTINUE
         </button>
 
