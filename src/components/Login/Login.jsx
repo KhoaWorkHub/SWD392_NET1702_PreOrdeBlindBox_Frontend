@@ -1,13 +1,37 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Tabs } from 'antd';
 
 export const Login = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState('Vietnam');
+  const [activeTab, setActiveTab] = useState('login');
+
+  const handleTabChange = (key) => {
+    setActiveTab(key);
+  };
 
   return (
     <div className="flex justify-center items-start pt-24 min-h-screen bg-white px-4">
       <div className="w-full max-w-[400px]">
-        <h1 className="text-center text-2xl font-medium mb-6">SIGN IN OR REGISTER</h1>
+        <Tabs
+          activeKey={activeTab}
+          onChange={handleTabChange}
+          centered
+          className="mb-4"
+          items={[
+            {
+              key: 'login',
+              label: 'SIGN IN',
+            },
+            {
+              key: 'register',
+              label: (
+                <Link to="/register">REGISTER</Link>
+              ),
+            },
+          ]}
+        />
         
         {/* Country Selector */}
         <div className="mb-3 relative">
@@ -54,7 +78,7 @@ export const Login = () => {
         />
 
         {/* Continue Button */}
-        <button className="w-full h-12 bg-black font-medium rounded mb-8" style={{ color: 'var(--color-white)' }}>
+        <button className="w-full h-12 bg-black text-white font-medium rounded mb-8">
           CONTINUE
         </button>
 
@@ -92,7 +116,17 @@ export const Login = () => {
           {' '}and{' '}
           <a href="#" className="underline hover:text-black">Privacy Policy</a>
         </p>
+
+        {/* Don't have an account */}
+        <div className="text-center mt-6">
+          <p className="text-sm text-gray-600">
+            Don&apos;t have an account?{' '}
+            <Link to="/register" className="text-black font-medium hover:underline">
+              Register Now
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );
-}
+};

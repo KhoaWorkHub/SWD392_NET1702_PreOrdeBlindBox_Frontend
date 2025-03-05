@@ -4,6 +4,8 @@ import 'antd/dist/reset.css';
 import { Login } from "./components/Login/Login";
 import { HomePage } from "./components/HomePage/HomePage";
 import { Footer } from "./components/Footer/Footer";
+import Register from "./components/Register/Register.jsx";
+
 const App = () => {
   return (
     <BrowserRouter>
@@ -12,6 +14,7 @@ const App = () => {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
         </Routes>
         <Footer/>
       </div>
