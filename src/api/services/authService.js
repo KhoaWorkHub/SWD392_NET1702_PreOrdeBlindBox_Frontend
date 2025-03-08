@@ -20,7 +20,7 @@ const authService = {
     } catch (error) {
       console.error('Login error:', error);
       throw error.response?.data || { 
-        message: 'An error occurred during login. Please try again.'
+        //message: 'An error occurred during login. Please try again.'
       };
     }
   },
