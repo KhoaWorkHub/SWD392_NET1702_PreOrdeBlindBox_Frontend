@@ -1,17 +1,57 @@
 import { Input, Button, Badge, Menu } from 'antd';
-import { 
-  SearchOutlined, 
-  UserOutlined, 
-  BellOutlined, 
-  ShoppingOutlined 
+import {
+  SearchOutlined,
+  UserOutlined,
+  BellOutlined,
+  ShoppingOutlined,
+  LogoutOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import { useContext, useEffect, useState } from 'react';
+import { AuthContext } from '../../contexts/AuthContext';
 
 const Navbar = () => {
   const navigate = useNavigate();
-
+  const { logout } = useContext(AuthContext);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  
+  // Check authentication status
+  useEffect(() => {
+    const checkAuth = () => {
+      const token = localStorage.getItem('accessToken');
+      setIsLoggedIn(!!token);
+    };
+    
+    // Check initially
+    checkAuth();
+    
+    // Set up event listener for storage changes
+    window.addEventListener('storage', checkAuth);
+    
+    // Custom event for login/logout
+    const handleAuthChange = () => {
+      checkAuth();
+    };
+    
+    window.addEventListener('authStateChanged', handleAuthChange);
+    
+    return () => {
+      window.removeEventListener('storage', checkAuth);
+      window.removeEventListener('authStateChanged', handleAuthChange);
+    };
+  }, []);
+  
   const handleSignInClick = () => {
     navigate('/login');
+  };
+  
+  const handleLogoutClick = () => {
+    logout();
+    setIsLoggedIn(false);
+    navigate('/login');
+    
+    // Dispatch custom event to notify other components
+    window.dispatchEvent(new Event('authStateChanged'));
   };
 
   return (
@@ -19,8 +59,8 @@ const Navbar = () => {
       <div className="container mx-auto px-4 flex items-center justify-between h-16">
         {/* Logo */}
         <div className="flex items-center">
-          <div 
-            className="bg-red-600 px-3 py-1 cursor-pointer" 
+          <div
+            className="bg-red-600 px-3 py-1 cursor-pointer"
             onClick={() => navigate('/')}
           >
             <span className="text-white font-bold text-lg">POP MART</span>
@@ -62,15 +102,26 @@ const Navbar = () => {
             <span className="text-xs font-bold">VN</span>
           </div>
           
-          {/* Account */}
-          <Button 
-            type="text" 
-            icon={<UserOutlined />} 
-            className="flex items-center"
-            onClick={handleSignInClick}
-          >
-            <span className="ml-1 text-sm">Sign in / Register</span>
-          </Button>
+          {/* Account - Conditionally render Sign in or Logout */}
+          {isLoggedIn ? (
+            <Button
+              type="text"
+              icon={<LogoutOutlined />}
+              className="flex items-center"
+              onClick={handleLogoutClick}
+            >
+              <span className="ml-1 text-sm">Logout</span>
+            </Button>
+          ) : (
+            <Button
+              type="text"
+              icon={<UserOutlined />}
+              className="flex items-center"
+              onClick={handleSignInClick}
+            >
+              <span className="ml-1 text-sm">Sign in / Register</span>
+            </Button>
+          )}
           
           {/* Notifications */}
           <Button type="text" icon={<BellOutlined />} />

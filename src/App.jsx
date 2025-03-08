@@ -5,20 +5,25 @@ import { Login } from "./components/Login/Login";
 import { HomePage } from "./components/HomePage/HomePage";
 import { Footer } from "./components/Footer/Footer";
 import Register from "./components/Register/Register.jsx";
+import { ToastContainer } from 'react-toastify';
+import { AuthProvider } from './contexts/AuthContext';
 
 const App = () => {
   return (
-    <BrowserRouter>
-      <div className="min-h-screen bg-white">
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-        </Routes>
-        <Footer/>
-      </div>
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <ToastContainer position="top-right" autoClose={1000} />
+        <div className="min-h-screen bg-white">
+          <Navbar />
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+          </Routes>
+          <Footer/>
+        </div>
+      </BrowserRouter>
+    </AuthProvider>
   );
 };
 
