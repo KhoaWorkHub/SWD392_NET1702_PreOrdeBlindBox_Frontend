@@ -7,6 +7,8 @@ import { Footer } from "./components/Footer/Footer";
 import Register from "./components/Register/Register.jsx";
 import { ToastContainer } from 'react-toastify';
 import { AuthProvider } from './contexts/AuthContext';
+import BlindboxPage from "./components/BlindboxPage/BlindboxPage.jsx";
+import BlindboxDetailPage from "./components/BlindboxDetailPage/BlindboxDetailPage.jsx";
 
 const App = () => {
   return (
@@ -19,6 +21,8 @@ const App = () => {
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/blindbox" element={<BlindboxPage />} />
+            <Route path="/blindbox/:id" element={<BlindboxDetailPage />} />
           </Routes>
           <Footer/>
         </div>
