@@ -9,6 +9,7 @@ const axiosInstance = axios.create({
     'Content-Type': 'application/json',
   },
   timeout: 10000, // 10 seconds timeout
+  withCredentials: true, // Important for CORS with credentials
 });
 
 axiosInstance.interceptors.request.use(
@@ -31,8 +32,18 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
     
+    // Check if it's a CORS error
+    if (error.message === 'Network Error' && error.response === undefined) {
+      console.error('Possible CORS error:', error);
+      return Promise.reject({ 
+        message: 'Unable to connect to the server. Please check your network connection or try again later.' 
+      });
+    }
+    
     // If 401 Unauthorized, redirect to login
     if (error.response?.status === 401 && !originalRequest._retry) {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('user');
       window.location.href = '/login';
     }
     
@@ -46,7 +57,9 @@ axiosInstance.interceptors.response.use(
       console.error('Resource not found. Check the API endpoint path.');
     }
     
-    return Promise.reject(error);
+    return Promise.reject(error.response?.data || { 
+      message: 'An unexpected error occurred. Please try again.' 
+    });
   }
 );
 
