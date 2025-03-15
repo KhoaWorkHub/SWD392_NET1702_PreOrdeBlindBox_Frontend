@@ -9,10 +9,12 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../../contexts/AuthContext';
+import useCart from '../../hooks/useCart';
 
 const Navbar = () => {
   const navigate = useNavigate();
   const { logout } = useContext(AuthContext);
+  const { itemCount } = useCart();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   
   // Check authentication status
@@ -52,6 +54,10 @@ const Navbar = () => {
     
     // Dispatch custom event to notify other components
     window.dispatchEvent(new Event('authStateChanged'));
+  };
+
+  const handleCartClick = () => {
+    navigate('/cart');
   };
 
   return (
@@ -126,9 +132,13 @@ const Navbar = () => {
           {/* Notifications */}
           <Button type="text" icon={<BellOutlined />} />
           
-          {/* Cart */}
-          <Badge count={0} size="small">
-            <Button type="text" icon={<ShoppingOutlined />} />
+          {/* Cart with item count */}
+          <Badge count={itemCount} size="small">
+            <Button 
+              type="text" 
+              icon={<ShoppingOutlined />} 
+              onClick={handleCartClick}
+            />
           </Badge>
         </div>
       </div>

@@ -1,0 +1,140 @@
+/* CartPage.css */
+
+.cart-login-card, 
+.cart-empty-card,
+.cart-items-card,
+.cart-summary-card,
+.cart-payment-card {
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.cart-loading-container,
+.cart-error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  padding: 40px;
+  text-align: center;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
+/* Product cell styling */
+.cart-product-cell {
+  display: flex;
+  align-items: center;
+}
+
+.cart-product-image {
+  margin-right: 16px;
+  flex-shrink: 0;
+}
+
+.cart-product-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.cart-product-name {
+  font-weight: 500;
+  color: #1a1a1a;
+  margin-bottom: 4px;
+  line-height: 1.4;
+  transition: color 0.3s;
+}
+
+.cart-product-name:hover {
+  color: #000000;
+  text-decoration: underline;
+}
+
+.cart-product-id {
+  font-size: 12px;
+  color: #666;
+}
+
+/* Price and quantity styling */
+.cart-product-price,
+.cart-product-subtotal {
+  font-size: 16px;
+}
+
+.cart-quantity-control {
+  display: flex;
+  align-items: center;
+}
+
+.cart-quantity-input {
+  width: 70px;
+}
+
+/* Cart summary styles */
+.cart-summary-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.cart-summary-total {
+  font-size: 18px;
+}
+
+.cart-total-price {
+  color: #d32f2f;
+}
+
+/* Payment methods */
+.cart-payment-methods {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.payment-method-icon {
+  border: 1px solid #eee;
+  border-radius: 4px;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Responsive table adjustments */
+@media (max-width: 768px) {
+  .cart-product-cell {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .cart-product-image {
+    margin-right: 0;
+    margin-bottom: 12px;
+  }
+  
+  .ant-table-column-title {
+    white-space: nowrap;
+  }
+}
+
+/* Override Ant Design styles */
+.ant-table-wrapper .ant-table-tbody > tr > td {
+  padding: 16px;
+}
+
+.ant-card-body {
+  padding: 24px;
+}
+
+.cart-remove-button:hover {
+  background-color: #fff1f0;
+}
+
+/* Cart action buttons */
+.cart-actions {
+  padding: 16px 0;
+}

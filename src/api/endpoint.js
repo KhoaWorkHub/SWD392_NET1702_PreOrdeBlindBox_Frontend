@@ -12,6 +12,13 @@ const endpoints = {
     getAllSeries: '/blindbox', 
     getSeriesById: (id) => `/blindbox/${id}`, 
   },
+  cart: {
+    getCart: '/cart',
+    addToCart: '/cart',
+    updateCartItem: (cartItemId, quantity) => `/cart/${cartItemId}?quantity=${quantity}`,
+    removeCartItem: (cartItemId) => `/cart/${cartItemId}`,
+    clearCart: '/cart'
+  }
 };
   
 export default endpoints;
