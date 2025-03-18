@@ -1,3 +1,7 @@
+// This code should be added to your src/api/axios.js file
+// to allow GET requests with a request body
+
+// Modify your axios instance to support GET requests with a body
 import axios from 'axios';
 
 // Using environment variable for API URL or fallback to default
@@ -12,6 +16,34 @@ const axiosInstance = axios.create({
   withCredentials: true, // Important for CORS with credentials
 });
 
+// Special configuration to send body with GET requests
+// This overrides the standard axios behavior
+const originalGet = axiosInstance.get;
+axiosInstance.get = function(url, config = {}) {
+  // Extract the data from config
+  const { data, ...otherConfig } = config;
+  
+  // If there's data, convert the GET to a POST with a custom method header
+  if (data) {
+    return axios({
+      ...otherConfig,
+      method: 'post', // Using POST because browsers properly send bodies with POST
+      url: baseURL + url,
+      headers: {
+        ...otherConfig.headers,
+        'X-HTTP-Method-Override': 'GET', // Tell the server this is actually a GET
+        'Content-Type': 'application/json',
+      },
+      data: data,
+      withCredentials: true,
+    });
+  }
+  
+  // Otherwise, use the original get method
+  return originalGet(url, otherConfig);
+};
+
+// Rest of your axios interceptors
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('accessToken');

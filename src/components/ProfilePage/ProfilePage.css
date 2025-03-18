@@ -1,0 +1,65 @@
+/* ProfilePage.css */
+
+.profile-card {
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  .profile-info {
+    padding: 0 8px;
+  }
+  
+  .loading-container,
+  .error-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    padding: 40px;
+    text-align: center;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    margin-bottom: 24px;
+  }
+  
+  /* Profile picture upload */
+  .avatar-upload {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .upload-button {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+  }
+  
+  /* Override Ant Design styles */
+  .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+    color: #000;
+  }
+  
+  .ant-tabs-ink-bar {
+    background-color: #000;
+  }
+  
+  .ant-input:focus,
+  .ant-input-focused,
+  .ant-input-affix-wrapper:focus,
+  .ant-input-affix-wrapper-focused {
+    border-color: #000;
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+  }
+  
+  .ant-input:hover,
+  .ant-input-affix-wrapper:hover {
+    border-color: #000;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .ant-tabs-tab {
+      padding: 12px 8px;
+    }
+  }

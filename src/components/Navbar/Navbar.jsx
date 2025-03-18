@@ -8,6 +8,7 @@ import {
   HistoryOutlined,
   CreditCardOutlined,
   SettingOutlined,
+  DashboardOutlined,
   DownOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
@@ -17,35 +18,8 @@ import useCart from '../../hooks/useCart';
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const { logout } = useContext(AuthContext);
+  const { logout, user, isAuthenticated, hasAnyRole } = useContext(AuthContext);
   const { itemCount } = useCart();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  
-  // Check authentication status
-  useEffect(() => {
-    const checkAuth = () => {
-      const token = localStorage.getItem('accessToken');
-      setIsLoggedIn(!!token);
-    };
-    
-    // Check initially
-    checkAuth();
-    
-    // Set up event listener for storage changes
-    window.addEventListener('storage', checkAuth);
-    
-    // Custom event for login/logout
-    const handleAuthChange = () => {
-      checkAuth();
-    };
-    
-    window.addEventListener('authStateChanged', handleAuthChange);
-    
-    return () => {
-      window.removeEventListener('storage', checkAuth);
-      window.removeEventListener('authStateChanged', handleAuthChange);
-    };
-  }, []);
   
   const handleSignInClick = () => {
     navigate('/login');
@@ -53,7 +27,6 @@ const Navbar = () => {
   
   const handleLogoutClick = () => {
     logout();
-    setIsLoggedIn(false);
     navigate('/login');
     
     // Dispatch custom event to notify other components
@@ -64,48 +37,71 @@ const Navbar = () => {
     navigate('/cart');
   };
 
+  // Check if user is admin or staff
+  const isDashboardUser = isAuthenticated && hasAnyRole(['ADMIN', 'STAFF']);
+
   // Account menu items for dropdown
-  const accountMenuItems = [
-    {
-      key: 'profile',
-      icon: <UserOutlined />,
-      label: 'My Profile',
-      onClick: () => navigate('/account/profile'),
-    },
-    {
-      key: 'orders',
-      icon: <ShoppingOutlined />,
-      label: 'My Orders',
-      onClick: () => navigate('/account/orders'),
-    },
-    {
-      key: 'preorders',
-      icon: <HistoryOutlined />,
-      label: 'My Preorders',
-      onClick: () => navigate('/account/preorders'),
-    },
-    {
-      key: 'payments',
-      icon: <CreditCardOutlined />,
-      label: 'Payment Methods',
-      onClick: () => navigate('/account/payments'),
-    },
-    {
-      key: 'settings',
-      icon: <SettingOutlined />,
-      label: 'Account Settings',
-      onClick: () => navigate('/account/settings'),
-    },
-    {
-      type: 'divider',
-    },
-    {
-      key: 'logout',
-      icon: <LogoutOutlined />,
-      label: 'Logout',
-      onClick: handleLogoutClick,
-    },
-  ];
+  const getAccountMenuItems = () => {
+    const items = [
+      {
+        key: 'profile',
+        icon: <UserOutlined />,
+        label: 'My Profile',
+        onClick: () => navigate('/account/profile'),
+      },
+    ];
+    
+    // Add dashboard link for admin and staff users
+    if (isDashboardUser) {
+      items.unshift({
+        key: 'dashboard',
+        icon: <DashboardOutlined />,
+        label: 'Dashboard',
+        onClick: () => navigate('/dashboard'),
+      });
+    }
+    
+    // Add other menu items
+    items.push(
+      {
+        key: 'orders',
+        icon: <ShoppingOutlined />,
+        label: 'My Orders',
+        onClick: () => navigate('/account/orders'),
+      },
+      {
+        key: 'preorders',
+        icon: <HistoryOutlined />,
+        label: 'My Preorders',
+        onClick: () => navigate('/account/preorders'),
+      },
+      {
+        key: 'payments',
+        icon: <CreditCardOutlined />,
+        label: 'Payment Methods',
+        onClick: () => navigate('/account/payments'),
+      },
+      {
+        key: 'settings',
+        icon: <SettingOutlined />,
+        label: 'Account Settings',
+        onClick: () => navigate('/account/settings'),
+      },
+      {
+        type: 'divider',
+      },
+      {
+        key: 'logout',
+        icon: <LogoutOutlined />,
+        label: 'Logout',
+        onClick: handleLogoutClick,
+      }
+    );
+    
+    return items;
+  };
+
+  const accountMenuItems = getAccountMenuItems();
 
   return (
     <nav className="w-full border-b border-gray-200 bg-white">
@@ -137,6 +133,13 @@ const Navbar = () => {
           <Menu.Item key="accessories" className="font-medium">
             ACCESSORIES
           </Menu.Item>
+          
+          {/* Dashboard Link for Admin/Staff */}
+          {isDashboardUser && (
+            <Menu.Item key="dashboard" className="font-medium">
+              <a href="/dashboard">DASHBOARD</a>
+            </Menu.Item>
+          )}
         </Menu>
 
         {/* Search Bar */}
@@ -156,7 +159,7 @@ const Navbar = () => {
           </div>
           
           {/* Account - Conditionally render Sign in or Account dropdown */}
-          {isLoggedIn ? (
+          {isAuthenticated ? (
             <Dropdown 
               menu={{ items: accountMenuItems }} 
               placement="bottomRight"
@@ -171,7 +174,13 @@ const Navbar = () => {
                   icon={<UserOutlined />} 
                   className="mr-1 bg-gray-200"
                 />
-                <span className="ml-1 text-sm hidden sm:inline">My Account</span>
+                <span className="ml-1 text-sm hidden sm:inline">
+                  {user && user.includes('ADMIN') 
+                    ? 'Admin' 
+                    : user && user.includes('STAFF') 
+                      ? 'Staff' 
+                      : 'My Account'}
+                </span>
                 <DownOutlined className="ml-1 text-xs" />
               </Button>
             </Dropdown>
