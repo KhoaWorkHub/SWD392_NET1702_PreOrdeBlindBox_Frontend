@@ -1,0 +1,100 @@
+/* PreorderPage.css */
+
+/* Common styles for preorder pages */
+.loading-container,
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  padding: 40px;
+  text-align: center;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
+/* Account nav styling */
+.account-nav-card {
+  transition: all 0.3s;
+}
+
+.account-nav-card:hover {
+  transform: translateY(-5px);
+}
+
+.account-nav-card.active {
+  background-color: #f0f0f0;
+  border-bottom: 2px solid #000;
+}
+
+/* Preorder history table */
+.preorder-history-table .ant-table-thead > tr > th {
+  background-color: #f9f9f9;
+  font-weight: 500;
+}
+
+.preorder-history-card,
+.preorder-summary-card,
+.empty-card {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Payment summary rows */
+.payment-summary-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+/* Status steps */
+.preorder-steps .ant-steps-item-title {
+  font-size: 14px;
+}
+
+.preorder-steps .ant-steps-item-process .ant-steps-item-icon {
+  background-color: #000;
+  border-color: #000;
+}
+
+.preorder-steps .ant-steps-item-finish .ant-steps-item-icon {
+  border-color: #000;
+}
+
+.preorder-steps .ant-steps-item-finish .ant-steps-item-icon > .ant-steps-icon {
+  color: #000;
+}
+
+.preorder-steps .ant-steps-item-finish > .ant-steps-item-container > .ant-steps-item-content > .ant-steps-item-title::after {
+  background-color: #000;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .preorder-steps .ant-steps-label-vertical .ant-steps-item-content {
+    width: auto;
+  }
+  
+  .ant-descriptions-bordered .ant-descriptions-item-label,
+  .ant-descriptions-bordered .ant-descriptions-item-content {
+    padding: 12px;
+  }
+  
+  .ant-timeline-item-content {
+    margin-left: 20px;
+  }
+}
+
+@media (max-width: 576px) {
+  .preorder-steps .ant-steps-item-content {
+    display: none;
+  }
+  
+  .ant-table-thead > tr > th,
+  .ant-table-tbody > tr > td {
+    padding: 8px;
+  }
+}

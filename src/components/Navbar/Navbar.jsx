@@ -1,10 +1,14 @@
-import { Input, Button, Badge, Menu } from 'antd';
+import { Input, Button, Badge, Menu, Dropdown, Avatar } from 'antd';
 import {
   SearchOutlined,
   UserOutlined,
   BellOutlined,
   ShoppingOutlined,
-  LogoutOutlined
+  LogoutOutlined,
+  HistoryOutlined,
+  CreditCardOutlined,
+  SettingOutlined,
+  DownOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useContext, useEffect, useState } from 'react';
@@ -60,6 +64,49 @@ const Navbar = () => {
     navigate('/cart');
   };
 
+  // Account menu items for dropdown
+  const accountMenuItems = [
+    {
+      key: 'profile',
+      icon: <UserOutlined />,
+      label: 'My Profile',
+      onClick: () => navigate('/account/profile'),
+    },
+    {
+      key: 'orders',
+      icon: <ShoppingOutlined />,
+      label: 'My Orders',
+      onClick: () => navigate('/account/orders'),
+    },
+    {
+      key: 'preorders',
+      icon: <HistoryOutlined />,
+      label: 'My Preorders',
+      onClick: () => navigate('/account/preorders'),
+    },
+    {
+      key: 'payments',
+      icon: <CreditCardOutlined />,
+      label: 'Payment Methods',
+      onClick: () => navigate('/account/payments'),
+    },
+    {
+      key: 'settings',
+      icon: <SettingOutlined />,
+      label: 'Account Settings',
+      onClick: () => navigate('/account/settings'),
+    },
+    {
+      type: 'divider',
+    },
+    {
+      key: 'logout',
+      icon: <LogoutOutlined />,
+      label: 'Logout',
+      onClick: handleLogoutClick,
+    },
+  ];
+
   return (
     <nav className="w-full border-b border-gray-200 bg-white">
       <div className="container mx-auto px-4 flex items-center justify-between h-16">
@@ -108,16 +155,26 @@ const Navbar = () => {
             <span className="text-xs font-bold">VN</span>
           </div>
           
-          {/* Account - Conditionally render Sign in or Logout */}
+          {/* Account - Conditionally render Sign in or Account dropdown */}
           {isLoggedIn ? (
-            <Button
-              type="text"
-              icon={<LogoutOutlined />}
-              className="flex items-center"
-              onClick={handleLogoutClick}
+            <Dropdown 
+              menu={{ items: accountMenuItems }} 
+              placement="bottomRight"
+              arrow
             >
-              <span className="ml-1 text-sm">Logout</span>
-            </Button>
+              <Button
+                type="text"
+                className="flex items-center"
+              >
+                <Avatar 
+                  size="small" 
+                  icon={<UserOutlined />} 
+                  className="mr-1 bg-gray-200"
+                />
+                <span className="ml-1 text-sm hidden sm:inline">My Account</span>
+                <DownOutlined className="ml-1 text-xs" />
+              </Button>
+            </Dropdown>
           ) : (
             <Button
               type="text"
