@@ -1,13 +1,13 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Navbar from "./components/Navbar/Navbar";
-import 'antd/dist/reset.css';
+import "antd/dist/reset.css";
 import { Login } from "./components/Login/Login";
 import { HomePage } from "./components/HomePage/HomePage";
 import { Footer } from "./components/Footer/Footer";
 import Register from "./components/Register/Register.jsx";
-import { ToastContainer } from 'react-toastify';
-import { AuthProvider } from './contexts/AuthContext';
-import { CartProvider } from './contexts/CartContext';
+import { ToastContainer } from "react-toastify";
+import { AuthProvider } from "./contexts/AuthContext";
+import { CartProvider } from "./contexts/CartContext";
 import BlindboxPage from "./components/BlindboxPage/BlindboxPage.jsx";
 import BlindboxDetailPage from "./components/BlindboxDetailPage/BlindboxDetailPage.jsx";
 import CartPage from "./components/CartPage/CartPage.jsx";
@@ -16,6 +16,8 @@ import OrderConfirmationPage from "./components/OrderConfirmationPage/OrderConfi
 import PreorderHistoryPage from "./components/PreorderHistoryPage/PreorderHistoryPage.jsx";
 import PreorderDetailsPage from "./components/PreorderDetailsPage/PreorderDetailsPage.jsx";
 import AccountPage from "./components/AccountPage/AccountPage.jsx";
+import ForgotPasswordPage from "./components/ForgotPasswordPage/ForgotPasswordPage.jsx";
+import ProfilePage from "./components/ProfilePage/ProfilePage.jsx";
 
 const App = () => {
   return (
@@ -33,12 +35,23 @@ const App = () => {
               <Route path="/blindbox/:id" element={<BlindboxDetailPage />} />
               <Route path="/cart" element={<CartPage />} />
               <Route path="/checkout" element={<CheckoutPage />} />
-              <Route path="/order-confirmation/:preorderId" element={<OrderConfirmationPage />} />
+              <Route
+                path="/order-confirmation/:preorderId"
+                element={<OrderConfirmationPage />}
+              />
               <Route path="/account" element={<AccountPage />} />
-              <Route path="/account/preorders" element={<PreorderHistoryPage />} />
-              <Route path="/account/preorders/:id" element={<PreorderDetailsPage />} />
+              <Route
+                path="/account/preorders"
+                element={<PreorderHistoryPage />}
+              />
+              <Route
+                path="/account/preorders/:id"
+                element={<PreorderDetailsPage />}
+              />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/account/profile" element={<ProfilePage />} />
             </Routes>
-            <Footer/>
+            <Footer />
           </div>
         </BrowserRouter>
       </CartProvider>

@@ -1,12 +1,18 @@
 const endpoints = {
   auth: {
     login: '/users/login',
-    register: '/users/register',
+    register: '/users/signup',
     logout: '/users/logout',
+    forgotPassword: '/users/forgot-password',
+    resendOTP: '/users/resend-otp',
+    confirmOTP: '/users/confirm-otp'
   },
   user: {
     profile: '/users/profile',
     updateProfile: '/users/profile',
+    getAll: '/users',
+    setStaff: (id) => `/users/${id}/set-staff`,
+    updateActiveStatus: (id) => `/users/${id}/active-status`
   },
   blindbox: {
     getAllSeries: '/blindbox', 
