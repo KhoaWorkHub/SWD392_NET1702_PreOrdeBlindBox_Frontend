@@ -18,6 +18,11 @@ const endpoints = {
     updateCartItem: (cartItemId, quantity) => `/cart/${cartItemId}?quantity=${quantity}`,
     removeCartItem: (cartItemId) => `/cart/${cartItemId}`,
     clearCart: '/cart'
+  },
+  checkout: {
+    processCheckout: '/checkout/deposit',
+    paymentCallback: '/payment/vn-pay-callback',
+    verifyPayment: (preorderId) => `/remaining-amount/${preorderId}`
   }
 };
   

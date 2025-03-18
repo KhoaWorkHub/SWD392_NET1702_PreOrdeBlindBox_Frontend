@@ -1,0 +1,246 @@
+/* CheckoutPage.css */
+
+/* General checkout styles */
+.checkout-cart-review-card,
+.checkout-shipping-info-card,
+.checkout-payment-review-card,
+.checkout-summary-card,
+.checkout-security-card,
+.checkout-payment-method-card {
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+/* Step actions container */
+.checkout-step-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+/* Product cell styling in review table */
+.checkout-product-cell {
+  display: flex;
+  align-items: center;
+}
+
+.checkout-product-image {
+  margin-right: 16px;
+  flex-shrink: 0;
+}
+
+.checkout-product-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.checkout-product-name {
+  font-weight: 500;
+  color: #1a1a1a;
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+.checkout-product-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Order summary styles */
+.checkout-summary-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.checkout-summary-total {
+  font-size: 18px;
+}
+
+.checkout-total-price {
+  color: #d32f2f;
+}
+
+/* Shipping info display */
+.checkout-contact-info {
+  background-color: #f9f9f9;
+  padding: 16px;
+  border-radius: 8px;
+}
+
+.checkout-info-item {
+  display: flex;
+  margin-bottom: 8px;
+}
+
+.checkout-info-item strong {
+  width: 80px;
+  flex-shrink: 0;
+}
+
+/* Mini cart preview in sidebar */
+.checkout-items-mini-preview {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.checkout-mini-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.checkout-mini-item:last-child {
+  border-bottom: none;
+}
+
+.checkout-mini-image {
+  margin-right: 12px;
+  position: relative;
+}
+
+.checkout-mini-image .ant-image-img {
+  border-radius: 4px;
+}
+
+.checkout-mini-details {
+  flex: 1;
+}
+
+.checkout-mini-name {
+  font-size: 14px;
+  line-height: 1.4;
+  margin-bottom: 2px;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.checkout-mini-meta {
+  font-size: 12px;
+}
+
+/* Payment method radio */
+.checkout-payment-radio {
+  width: 100%;
+  padding: 12px 0;
+}
+
+.checkout-payment-radio .ant-radio {
+  margin-top: 8px;
+}
+
+/* Override Ant Design styles */
+.ant-steps-item-process .ant-steps-item-icon {
+  background-color: #000;
+  border-color: #000;
+}
+
+.ant-steps-item-finish .ant-steps-item-icon {
+  border-color: #000;
+}
+
+.ant-steps-item-finish .ant-steps-item-icon > .ant-steps-icon {
+  color: #000;
+}
+
+.ant-steps-item-finish > .ant-steps-item-container > .ant-steps-item-content > .ant-steps-item-title::after {
+  background-color: #000;
+}
+
+.ant-card-body {
+  padding: 24px;
+}
+
+.ant-table-wrapper .ant-table-thead > tr > th {
+  background-color: #f9f9f9;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .checkout-product-cell {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .checkout-product-image {
+    margin-right: 0;
+    margin-bottom: 8px;
+  }
+  
+  .checkout-info-item {
+    flex-direction: column;
+  }
+  
+  .checkout-info-item strong {
+    width: 100%;
+    margin-bottom: 4px;
+  }
+  
+  .ant-steps-horizontal:not(.ant-steps-label-vertical) .ant-steps-item-description {
+    max-width: 100%;
+  }
+}
+
+/* Confirmation page specific styles */
+.checkout-confirmation-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.checkout-confirmation-icon {
+  font-size: 64px;
+  color: #52c41a;
+  margin-bottom: 16px;
+}
+
+.checkout-confirmation-message {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.checkout-confirmation-card {
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.checkout-confirmation-table {
+  margin-top: 24px;
+}
+
+.checkout-confirmation-actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+/* Loading overlay */
+.checkout-loading-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.checkout-loading-content {
+  text-align: center;
+}
+
+.checkout-loading-icon {
+  font-size: 40px;
+  margin-bottom: 16px;
+}
