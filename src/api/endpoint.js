@@ -23,6 +23,10 @@ const endpoints = {
     processCheckout: '/checkout/deposit',
     paymentCallback: '/payment/vn-pay-callback',
     verifyPayment: (preorderId) => `/remaining-amount/${preorderId}`
+  },
+  preorders: {
+    getHistory: '/preorders',
+    getDetails: (id) => `/preorders/${id}`
   }
 };
   

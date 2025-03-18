@@ -862,6 +862,13 @@ const BlindboxDetailPage = () => {
                             payment within 14 days after the campaign ends or
                             your deposit will be forfeited.
                           </p>
+                          <p className="mt-2">
+                            You can track all your preorders in your{" "}
+                            <Link to="/account/preorders">
+                              account preorder history
+                            </Link>
+                            .
+                          </p>
                         </div>
                       }
                       type="warning"
