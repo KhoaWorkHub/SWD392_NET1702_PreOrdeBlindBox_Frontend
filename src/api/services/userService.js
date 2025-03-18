@@ -107,17 +107,29 @@ const userService = {
   },
 
   /**
-   * Get all users with filtering (admin/staff only)
-   * 
+   * Get all users with filtering, pagination, and sorting
    * @param {Object} criteria - Filter criteria for users
    * @returns {Promise} - Promise with paginated user data
    */
   getAllUsers: async (criteria) => {
     try {
-      const response = await axiosInstance.get(endpoints.user.getAll, { data: criteria });
+      // Map frontend filter fields to backend expectations
+      const backendCriteria = {
+        currentPage: criteria.currentPage,
+        pageSize: criteria.pageSize,
+        // Map name to search
+        search: criteria.name || '',
+        email: criteria.email || '',
+        phone: criteria.phone || ''
+        // Note: role and isActive filters won't work unless added to backend
+      };
+      
+      console.log('Sending user criteria:', backendCriteria);
+      
+      const response = await axiosInstance.post(endpoints.user.getAll, backendCriteria);
       return response.data;
     } catch (error) {
-      console.error('Get users error:', error);
+      console.error('Get users error:', error.response?.data || error);
       throw error.response?.data || { 
         message: 'An error occurred while fetching users.' 
       };
@@ -126,7 +138,6 @@ const userService = {
 
   /**
    * Set user as staff (admin only)
-   * 
    * @param {number} userId - ID of user to promote to staff
    * @returns {Promise} - Promise with response data
    */
@@ -144,7 +155,6 @@ const userService = {
 
   /**
    * Update user active status (admin only)
-   * 
    * @param {number} userId - ID of user to update
    * @param {boolean} isActive - Whether to activate or deactivate the user
    * @returns {Promise} - Promise with response data
@@ -161,41 +171,6 @@ const userService = {
       console.error('Update user status error:', error);
       throw error.response?.data || { 
         message: 'An error occurred while updating user status.' 
-      };
-    }
-  },
-
-  /**
-   * Get user profile information
-   * 
-   * @returns {Promise} - Promise with user profile data
-   */
-  getUserProfile: async () => {
-    try {
-      const response = await axiosInstance.get(endpoints.user.profile);
-      return response.data;
-    } catch (error) {
-      console.error('Get profile error:', error);
-      throw error.response?.data || { 
-        message: 'An error occurred while fetching user profile.' 
-      };
-    }
-  },
-
-  /**
-   * Update user profile information
-   * 
-   * @param {Object} profileData - Updated profile data
-   * @returns {Promise} - Promise with response data
-   */
-  updateUserProfile: async (profileData) => {
-    try {
-      const response = await axiosInstance.put(endpoints.user.updateProfile, profileData);
-      return response.data;
-    } catch (error) {
-      console.error('Update profile error:', error);
-      throw error.response?.data || { 
-        message: 'An error occurred while updating your profile.' 
       };
     }
   }

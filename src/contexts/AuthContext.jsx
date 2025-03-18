@@ -17,7 +17,7 @@ export const AuthProvider = ({ children }) => {
         if (isAuthenticated) {
           // Get user role from localStorage
           const userRole = localStorage.getItem('user');
-          setUser(userRole);
+          setUser(userRole ? userRole : null);
         }
       } catch (err) {
         console.error('Failed to initialize auth:', err);
@@ -36,11 +36,15 @@ export const AuthProvider = ({ children }) => {
     
     try {
       const response = await authService.login(credentials);
+      
       // Update user state after successful login
-      setUser(response.metadata.roles);
+      if (response && response.metadata && response.metadata.roles) {
+        setUser(response.metadata.roles);
+      }
+      
       return response;
     } catch (err) {
-      setError(err.message || '');
+      setError(err.message || 'Login failed');
       throw err;
     } finally {
       setLoading(false);
@@ -53,6 +57,18 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  // Check if user has a specific role
+  const hasRole = (role) => {
+    if (!user) return false;
+    return user.includes(role);
+  };
+
+  // Check if user has any of the specified roles
+  const hasAnyRole = (roles) => {
+    if (!user) return false;
+    return roles.some(role => user.includes(role));
+  };
+
   // Auth context value
   const value = {
     user,
@@ -60,7 +76,12 @@ export const AuthProvider = ({ children }) => {
     loading,
     error,
     login,
-    logout
+    logout,
+    hasRole,
+    hasAnyRole,
+    isAdmin: user ? user.includes('ADMIN') : false,
+    isStaff: user ? user.includes('STAFF') : false,
+    isCustomer: user ? user.includes('CUSTOMER') : false
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
