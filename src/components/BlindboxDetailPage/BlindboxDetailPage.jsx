@@ -193,18 +193,21 @@ const BlindboxDetailPage = () => {
   };
 
   // Get tier progress percentage
+  // Updated getTierProgress method
   const getTierProgress = (tier) => {
     if (!tier || !blindbox.activeCampaign) return 0;
 
     // For PROCESSING tier, calculate percentage of progress
     if (tier.tierStatus === "PROCESSING") {
+      // Find the previous tier
       const previousTier = blindbox.activeCampaign.campaignTiers.find(
         (t) => t.tierOrder === tier.tierOrder - 1
       );
 
+      // Calculate start and target quantities for this tier
       const startCount = previousTier ? previousTier.thresholdQuantity : 0;
       const targetCount = tier.thresholdQuantity;
-      const currentCount = blindbox.activeCampaign.currentUnitsCount;
+      const currentCount = tier.currentCount; // Use the currentCount from the tier itself
 
       // Calculate percentage within this tier's range
       return Math.min(
@@ -312,11 +315,14 @@ const BlindboxDetailPage = () => {
                 <div className="flex justify-between items-center">
                   <Text type="secondary">
                     {tier.tierStatus === "ACHIEVED" ? (
-                      <span className="text-green-600">Completed!</span>
+                      <span className="text-green-600">
+                        {" "}
+                        {tier.currentCount} / {tier.thresholdQuantity}{" "}
+                        Completed!
+                      </span>
                     ) : (
                       <>
-                        {blindbox.activeCampaign.currentUnitsCount} /{" "}
-                        {tier.thresholdQuantity}{" "}
+                        {tier.currentCount} / {tier.thresholdQuantity}{" "}
                         {blindbox.activeCampaign.campaignType === "MILESTONE"
                           ? "units sold"
                           : "preorders"}
@@ -325,10 +331,7 @@ const BlindboxDetailPage = () => {
                   </Text>
                   {tier.tierStatus === "PROCESSING" && (
                     <Text type="secondary">
-                      Need{" "}
-                      {tier.thresholdQuantity -
-                        blindbox.activeCampaign.currentUnitsCount}{" "}
-                      more
+                      Need {tier.thresholdQuantity - tier.currentCount} more
                     </Text>
                   )}
                 </div>
