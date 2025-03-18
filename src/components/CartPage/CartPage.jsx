@@ -379,7 +379,7 @@ const CartPage = () => {
                 type="primary"
                 size="large"
                 block
-                onClick={handleCheckout}
+                onClick={() => navigate("/checkout")}
                 className="mt-6 h-12 bg-black hover:bg-gray-800"
                 disabled={cartItems.length === 0}
               >

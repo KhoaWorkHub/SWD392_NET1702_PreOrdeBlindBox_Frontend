@@ -11,6 +11,8 @@ import { CartProvider } from './contexts/CartContext';
 import BlindboxPage from "./components/BlindboxPage/BlindboxPage.jsx";
 import BlindboxDetailPage from "./components/BlindboxDetailPage/BlindboxDetailPage.jsx";
 import CartPage from "./components/CartPage/CartPage.jsx";
+import CheckoutPage from "./components/CheckoutPage/CheckoutPage.jsx";
+import OrderConfirmationPage from "./components/OrderConfirmationPage/OrderConfirmationPage.jsx";
 
 const App = () => {
   return (
@@ -27,6 +29,8 @@ const App = () => {
               <Route path="/blindbox" element={<BlindboxPage />} />
               <Route path="/blindbox/:id" element={<BlindboxDetailPage />} />
               <Route path="/cart" element={<CartPage />} />
+              <Route path="/checkout" element={<CheckoutPage />} />
+              <Route path="/order-confirmation/:preorderId" element={<OrderConfirmationPage />} />
             </Routes>
             <Footer/>
           </div>
