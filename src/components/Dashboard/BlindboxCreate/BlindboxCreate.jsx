@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { 
   Card, 
   Form, 
@@ -14,14 +14,17 @@ import {
   Space,
   Alert,
   Row,
-  Col
+  Col,
+  Collapse
 } from 'antd';
 import { 
   PlusOutlined, 
   UploadOutlined, 
   SaveOutlined,
   ArrowLeftOutlined,
-  InboxOutlined
+  InboxOutlined,
+  DeleteOutlined,
+  QuestionCircleOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import useBlindboxManagement from '../../../hooks/useBlindboxManagement';
@@ -29,6 +32,7 @@ import useBlindboxManagement from '../../../hooks/useBlindboxManagement';
 const { Title, Text } = Typography;
 const { TextArea } = Input;
 const { Dragger } = Upload;
+const { Panel } = Collapse;
 
 /**
  * BlindboxCreate Component for the Dashboard
@@ -42,6 +46,7 @@ const BlindboxCreate = () => {
   const [fileList, setFileList] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
+  const [itemCount, setItemCount] = useState(1);
 
   // Handle form submission
   const handleSubmit = async (values) => {
@@ -49,21 +54,51 @@ const BlindboxCreate = () => {
     setError(null);
     
     try {
-      // Prepare data for submission
+      // Prepare main data for submission
       const blindboxData = {
         seriesName: values.seriesName,
         description: values.description,
         boxPrice: values.boxPrice,
         packagePrice: values.packagePrice,
-        availableBoxUnits: values.availableBoxUnits,
-        availablePackageUnits: values.availablePackageUnits,
-        active: values.active
+        numberOfBlindboxesPerPackage: values.numberOfBlindboxesPerPackage || 6,
+        numberOfSeparatedSalePackage: values.availablePackageUnits,
+        numberOfWholeSalePackage: values.availableBoxUnits,
+        active: values.active,
+        // Include item data
+        items: Array.from({ length: itemCount }, (_, index) => ({
+          itemName: values[`itemName_${index}`] || `Item ${index + 1}`,
+          itemChance: values[`itemChance_${index}`] || 10,
+        }))
       };
       
-      console.log('Submitting blindbox data:', blindboxData);
+      console.log('Sending blindbox data:', blindboxData);
+      
+      // Create FormData object to send both JSON and files
+      const formData = new FormData();
+      
+      // Append request data as JSON blob with proper Content-Type
+      const jsonBlob = new Blob([JSON.stringify(blindboxData)], {
+        type: 'application/json'
+      });
+      formData.append('request', jsonBlob);
+      
+      // Append series images
+      if (fileList.length > 0) {
+        fileList.forEach((file) => {
+          // Make sure we're getting the actual File object
+          const fileObj = file.originFileObj || file;
+          formData.append('seriesImages', fileObj);
+        });
+      }
+      
+      // Log the FormData contents for debugging
+      console.log('FormData entries:');
+      for (const entry of formData.entries()) {
+        console.log(entry[0], entry[1] instanceof Blob ? 'Blob/File' : entry[1]);
+      }
       
       // Call API to create blindbox series
-      const success = await createBlindboxSeries(blindboxData);
+      const success = await createBlindboxSeries(formData);
       
       if (success) {
         message.success('Blindbox series created successfully');
@@ -83,6 +118,43 @@ const BlindboxCreate = () => {
   // Handle image upload
   const handleImageChange = ({ fileList }) => {
     setFileList(fileList);
+  };
+
+  // Add item to the form
+  const addItem = () => {
+    setItemCount(prevCount => prevCount + 1);
+  };
+
+  // Remove item from the form
+  const removeItem = (index) => {
+    if (itemCount <= 1) {
+      message.warning('At least one item is required');
+      return;
+    }
+    
+    // Remove the corresponding form fields
+    form.setFieldsValue({
+      [`itemName_${index}`]: undefined,
+      [`itemChance_${index}`]: undefined
+    });
+    
+    // Update the item count
+    setItemCount(prevCount => prevCount - 1);
+    
+    // Shift remaining items
+    for (let i = index; i < itemCount - 1; i++) {
+      const nextItem = {
+        name: form.getFieldValue(`itemName_${i + 1}`),
+        chance: form.getFieldValue(`itemChance_${i + 1}`)
+      };
+      
+      form.setFieldsValue({
+        [`itemName_${i}`]: nextItem.name,
+        [`itemChance_${i}`]: nextItem.chance,
+        [`itemName_${i + 1}`]: undefined,
+        [`itemChance_${i + 1}`]: undefined
+      });
+    }
   };
 
   // Image upload props
@@ -120,6 +192,65 @@ const BlindboxCreate = () => {
     navigate('/dashboard/blindboxes/list');
   };
 
+  // Render form items for blindbox items
+  const renderItemFields = () => {
+    const itemFields = [];
+    
+    for (let i = 0; i < itemCount; i++) {
+      itemFields.push(
+        <div key={i} className="item-fields mb-4 p-4 bg-gray-50 rounded-lg">
+          <div className="flex justify-between items-center mb-2">
+            <Title level={5} className="mb-0">Item #{i + 1}</Title>
+            <Button 
+              danger 
+              type="text" 
+              icon={<DeleteOutlined />} 
+              onClick={() => removeItem(i)}
+            />
+          </div>
+          
+          <Row gutter={16}>
+            <Col xs={24} md={16}>
+              <Form.Item
+                name={`itemName_${i}`}
+                label="Item Name"
+                rules={[{ required: true, message: 'Please enter item name' }]}
+              >
+                <Input placeholder={`Item ${i + 1}`} />
+              </Form.Item>
+            </Col>
+            <Col xs={24} md={8}>
+              <Form.Item
+                name={`itemChance_${i}`}
+                label={
+                  <span>
+                    Chance (%) 
+                    <QuestionCircleOutlined className="ml-1 text-gray-400" title="Probability of this item appearing in a blindbox" />
+                  </span>
+                }
+                rules={[
+                  { required: true, message: 'Please enter chance' },
+                  { type: 'number', min: 0, max: 100, message: 'Chance must be between 0-100%' }
+                ]}
+                initialValue={10}
+              >
+                <InputNumber
+                  min={0}
+                  max={100}
+                  formatter={value => `${value}%`}
+                  parser={value => value.replace('%', '')}
+                  style={{ width: '100%' }}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+        </div>
+      );
+    }
+    
+    return itemFields;
+  };
+
   return (
     <div className="blindbox-create-container">
       <Card>
@@ -150,8 +281,9 @@ const BlindboxCreate = () => {
           onFinish={handleSubmit}
           initialValues={{
             active: true,
-            availableBoxUnits: 0,
-            availablePackageUnits: 0
+            availableBoxUnits: 100,
+            availablePackageUnits: 20,
+            numberOfBlindboxesPerPackage: 6
           }}
         >
           <Row gutter={24}>
@@ -235,7 +367,7 @@ const BlindboxCreate = () => {
           </Row>
           
           <Row gutter={24}>
-            <Col xs={24} md={12}>
+            <Col xs={24} md={8}>
               <Form.Item
                 name="availableBoxUnits"
                 label="Available Box Units"
@@ -252,7 +384,7 @@ const BlindboxCreate = () => {
               </Form.Item>
             </Col>
             
-            <Col xs={24} md={12}>
+            <Col xs={24} md={8}>
               <Form.Item
                 name="availablePackageUnits"
                 label="Available Package Units"
@@ -265,6 +397,23 @@ const BlindboxCreate = () => {
                   style={{ width: '100%' }}
                   placeholder="Enter available package units"
                   min={0}
+                />
+              </Form.Item>
+            </Col>
+            
+            <Col xs={24} md={8}>
+              <Form.Item
+                name="numberOfBlindboxesPerPackage"
+                label="Boxes Per Package"
+                rules={[
+                  { required: true, message: 'Please enter boxes per package' },
+                  { type: 'number', min: 1, message: 'Must be at least 1' }
+                ]}
+              >
+                <InputNumber
+                  style={{ width: '100%' }}
+                  placeholder="Enter boxes per package"
+                  min={1}
                 />
               </Form.Item>
             </Col>
@@ -288,6 +437,48 @@ const BlindboxCreate = () => {
             </Dragger>
           </Form.Item>
           
+          <Divider orientation="left">
+            <div className="flex items-center">
+              <span>Blindbox Items</span>
+              <Button 
+                type="primary" 
+                size="small" 
+                icon={<PlusOutlined />} 
+                onClick={addItem}
+                className="ml-4 bg-black hover:bg-gray-800"
+              >
+                Add Item
+              </Button>
+            </div>
+          </Divider>
+          
+          <div className="blindbox-items-container mb-6">
+            <Collapse defaultActiveKey={['0']}>
+              <Panel header="Items Information" key="items">
+                <Alert
+                  message="Item Details"
+                  description="Define the items that can be found in this blindbox series. Each item should have a name and probability of appearance."
+                  type="info"
+                  showIcon
+                  className="mb-4"
+                />
+                
+                {renderItemFields()}
+                
+                <div className="text-center mt-4">
+                  <Button 
+                    type="dashed" 
+                    onClick={addItem} 
+                    block
+                    icon={<PlusOutlined />}
+                  >
+                    Add Another Item
+                  </Button>
+                </div>
+              </Panel>
+            </Collapse>
+          </div>
+          
           <Divider />
           
           <Form.Item>
@@ -299,7 +490,7 @@ const BlindboxCreate = () => {
                 icon={<SaveOutlined />}
                 className="bg-black hover:bg-gray-800"
               >
-                Save Blindbox Series
+                Create Blindbox Series
               </Button>
               
               <Button 

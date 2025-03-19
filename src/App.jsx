@@ -82,28 +82,32 @@ const AppRoutes = () => {
           {/* Blindbox Management Routes */}
           <Route path="blindboxes">
             <Route path="list" element={<BlindboxList />} />
+
+            {/* Fix for create route */}
             <Route
               path="create"
               element={
                 <ProtectedRoute
                   allowedRoles={["ADMIN"]}
                   redirectPath="/dashboard/blindboxes/list"
-                >
-                  <BlindboxCreate />
-                </ProtectedRoute>
+                />
               }
-            />
+            >
+              <Route index element={<BlindboxCreate />} />
+            </Route>
+
+            {/* Fix for edit route */}
             <Route
               path="edit/:id"
               element={
                 <ProtectedRoute
                   allowedRoles={["ADMIN"]}
                   redirectPath="/dashboard/blindboxes/list"
-                >
-                  <BlindboxEdit />
-                </ProtectedRoute>
+                />
               }
-            />
+            >
+              <Route index element={<BlindboxEdit />} />
+            </Route>
           </Route>
 
           <Route path="orders" element={<div>Orders Management</div>} />

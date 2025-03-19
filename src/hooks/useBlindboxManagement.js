@@ -109,22 +109,37 @@ const useBlindboxManagement = () => {
   /**
    * Create a new blindbox series
    * 
-   * @param {Object} data - Blindbox series data
+   * @param {FormData} formData - FormData containing request data and images
    * @returns {Promise<boolean>} - Success status
    */
-  const createBlindboxSeries = useCallback(async (data) => {
+  const createBlindboxSeries = useCallback(async (formData) => {
     setLoading(true);
     setError(null);
     
     try {
-      const response = await blindboxService.createBlindBoxSeries(data);
+      console.log("Sending formData to API:", formData);
       
-      if (response && response.status === true) {
+      const response = await blindboxService.createBlindBoxSeries(formData);
+      
+      // Log the complete response
+      console.log("Complete API response:", response);
+      
+      // Specific check for your API response structure
+      if (response && response.status === true && response.metadata) {
+        console.log("Success! Created blindbox with ID:", response.metadata.id);
         message.success('Blindbox series created successfully');
         // Refresh the list
         await fetchBlindboxSeries();
         return true;
       } else {
+        // Log what's missing in the success criteria
+        console.error("Response validation failed:", {
+          hasResponse: !!response,
+          hasStatus: response && 'status' in response,
+          statusValue: response?.status,
+          hasMetadata: response && 'metadata' in response
+        });
+        
         throw new Error(response?.message || 'Failed to create blindbox series');
       }
     } catch (error) {
@@ -222,19 +237,19 @@ const useBlindboxManagement = () => {
       const response = await blindboxService.uploadBlindboxItemImages(itemId, files);
       
       if (response && response.status === true) {
-        message.success('Images uploaded successfully');
+        message.success('Item images uploaded successfully');
         // Refresh the selected series if needed
         if (selectedSeries) {
           await getBlindboxSeriesById(selectedSeries.id);
         }
         return true;
       } else {
-        throw new Error(response?.message || 'Failed to upload images');
+        throw new Error(response?.message || 'Failed to upload item images');
       }
     } catch (error) {
       console.error(`Error uploading images for blindbox item ${itemId}:`, error);
-      setError(error.message || 'Failed to upload images');
-      message.error(error.message || 'Failed to upload images');
+      setError(error.message || 'Failed to upload item images');
+      message.error(error.message || 'Failed to upload item images');
       return false;
     } finally {
       setLoading(false);
