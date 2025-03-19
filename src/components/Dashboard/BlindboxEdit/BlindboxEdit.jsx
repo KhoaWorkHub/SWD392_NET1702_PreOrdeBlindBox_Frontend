@@ -20,7 +20,8 @@ import {
   Image,
   Modal,
   Empty,
-  Tag
+  Tag,
+  Tooltip
 } from 'antd';
 import { 
   PlusOutlined, 
@@ -50,9 +51,13 @@ const BlindboxEdit = () => {
   const { id } = useParams();
   const [form] = Form.useForm();
   
+  // Debug log to check ID
+  console.log("BlindboxEdit mounted with ID:", id);
+  
   const { 
     getBlindboxSeriesById,
     updateBlindboxSeries,
+    uploadBlindboxSeriesImages,
     uploadBlindboxItemImages,
     loading,
     selectedSeries,
@@ -66,15 +71,21 @@ const BlindboxEdit = () => {
   const [initialLoading, setInitialLoading] = useState(true);
   const [selectedItem, setSelectedItem] = useState(null);
   const [itemImageModalVisible, setItemImageModalVisible] = useState(false);
-  const [itemImageFileList, setItemImageFileList] = useState([]);
+  const [itemImageFile, setItemImageFile] = useState(null);
   const [uploadingItemImages, setUploadingItemImages] = useState(false);
+  const [seriesImagesModalVisible, setSeriesImagesModalVisible] = useState(false);
 
   // Fetch blindbox series on component mount
   useEffect(() => {
     const fetchBlindboxSeries = async () => {
+      console.log("Fetching blindbox data for ID:", id);
+      setInitialLoading(true);
       try {
         const data = await getBlindboxSeriesById(id);
+        console.log("API Response:", data);
+        
         if (data) {
+          console.log("Setting form values with data:", data);
           // Set form values
           form.setFieldsValue({
             seriesName: data.seriesName,
@@ -83,8 +94,11 @@ const BlindboxEdit = () => {
             packagePrice: data.packagePrice,
             availableBoxUnits: data.availableBoxUnits,
             availablePackageUnits: data.availablePackageUnits,
+            numberOfBlindboxesPerPackage: data.numberOfBlindboxesPerPackage || 6,
             active: data.active
           });
+        } else {
+          setError("No data returned from API");
         }
       } catch (err) {
         console.error('Error fetching blindbox series:', err);
@@ -94,7 +108,12 @@ const BlindboxEdit = () => {
       }
     };
     
-    fetchBlindboxSeries();
+    if (id) {
+      fetchBlindboxSeries();
+    } else {
+      setError("No blindbox ID provided");
+      setInitialLoading(false);
+    }
   }, [id, getBlindboxSeriesById, form]);
 
   // Handle form submission
@@ -111,6 +130,7 @@ const BlindboxEdit = () => {
         packagePrice: values.packagePrice,
         availableBoxUnits: values.availableBoxUnits,
         availablePackageUnits: values.availablePackageUnits,
+        numberOfBlindboxesPerPackage: values.numberOfBlindboxesPerPackage || 6,
         active: values.active
       };
       
@@ -122,10 +142,12 @@ const BlindboxEdit = () => {
       if (success) {
         message.success('Blindbox series updated successfully');
         
-        // Also upload images if any
+        // Also upload series images if any
         if (fileList.length > 0) {
-          // TODO: Implement image upload for series
-          message.info('Image upload for series not yet implemented');
+          const imageFiles = fileList.map(file => file.originFileObj).filter(Boolean);
+          if (imageFiles.length > 0) {
+            await uploadSeriesImages(imageFiles);
+          }
         }
       } else {
         throw new Error('Failed to update blindbox series');
@@ -139,6 +161,24 @@ const BlindboxEdit = () => {
     }
   };
 
+  // Handle upload of blindbox series images
+  const uploadSeriesImages = async (files) => {
+    try {
+      const success = await uploadBlindboxSeriesImages(id, files);
+      if (success) {
+        message.success('Series images uploaded successfully');
+        setFileList([]);
+        // Refresh blindbox series data
+        await getBlindboxSeriesById(id);
+      } else {
+        throw new Error('Failed to upload series images');
+      }
+    } catch (err) {
+      console.error('Error uploading series images:', err);
+      message.error(err.message || 'Failed to upload series images');
+    }
+  };
+
   // Handle images upload for blindbox items
   const handleItemImageUpload = async () => {
     if (!selectedItem) {
@@ -146,46 +186,73 @@ const BlindboxEdit = () => {
       return;
     }
     
-    if (itemImageFileList.length === 0) {
-      message.error('Please select images to upload');
+    if (!itemImageFile) {
+      message.error('Please select an image to upload');
       return;
     }
     
     setUploadingItemImages(true);
     
     try {
-      // Get files from fileList
-      const files = itemImageFileList.map(file => file.originFileObj);
-      
-      // Call API to upload images
-      const success = await uploadBlindboxItemImages(selectedItem.id, files);
+      // Call API to upload image
+      const success = await uploadBlindboxItemImages(selectedItem.id, itemImageFile);
       
       if (success) {
-        message.success('Images uploaded successfully');
+        message.success('Image uploaded successfully');
         setItemImageModalVisible(false);
-        setItemImageFileList([]);
+        setItemImageFile(null);
         
         // Refresh blindbox series data
         await getBlindboxSeriesById(id);
       } else {
-        throw new Error('Failed to upload images');
+        throw new Error('Failed to upload image');
       }
     } catch (err) {
-      console.error('Error uploading item images:', err);
-      message.error(err.message || 'Failed to upload images');
+      console.error('Error uploading item image:', err);
+      message.error(err.message || 'Failed to upload image');
     } finally {
       setUploadingItemImages(false);
     }
   };
 
-  // Handle series image upload
-  const handleSeriesImageChange = ({ fileList }) => {
-    setFileList(fileList);
+  // Handle series image change
+  const handleSeriesImageChange = (info) => {
+    let newFileList = [...info.fileList];
+    
+    // Limit to maximum 5 images
+    newFileList = newFileList.slice(-5);
+    
+    setFileList(newFileList);
   };
 
-  // Handle item image upload
-  const handleItemImageChange = ({ fileList }) => {
-    setItemImageFileList(fileList);
+  // Handle series image upload properties
+  const beforeSeriesImageUpload = (file) => {
+    const isImage = file.type.startsWith('image/');
+    if (!isImage) {
+      message.error('You can only upload image files!');
+      return Upload.LIST_IGNORE;
+    }
+    
+    const isLt5M = file.size / 1024 / 1024 < 5;
+    if (!isLt5M) {
+      message.error('Image must be smaller than 5MB!');
+      return Upload.LIST_IGNORE;
+    }
+    
+    return false; // Prevent automatic upload
+  };
+
+  // Handle item image change
+  const handleItemImageChange = (info) => {
+    if (info.file.status === 'removed') {
+      setItemImageFile(null);
+      return;
+    }
+    
+    // Only use the latest file
+    if (info.file.originFileObj) {
+      setItemImageFile(info.file.originFileObj);
+    }
   };
 
   // Go back to blindbox list
@@ -196,69 +263,13 @@ const BlindboxEdit = () => {
   // Open item image upload modal
   const openItemImageUploadModal = (item) => {
     setSelectedItem(item);
-    setItemImageFileList([]);
+    setItemImageFile(null);
     setItemImageModalVisible(true);
   };
 
-  // Series image upload props
-  const seriesUploadProps = {
-    onRemove: (file) => {
-      const index = fileList.indexOf(file);
-      const newFileList = fileList.slice();
-      newFileList.splice(index, 1);
-      setFileList(newFileList);
-    },
-    beforeUpload: (file) => {
-      // Validate file type
-      const isImage = file.type.startsWith('image/');
-      if (!isImage) {
-        message.error('You can only upload image files!');
-        return Upload.LIST_IGNORE;
-      }
-      
-      // Validate file size (5MB limit)
-      const isLt5M = file.size / 1024 / 1024 < 5;
-      if (!isLt5M) {
-        message.error('Image must be smaller than 5MB!');
-        return Upload.LIST_IGNORE;
-      }
-      
-      // Add to file list
-      setFileList([...fileList, file]);
-      return false; // Prevent automatic upload
-    },
-    fileList,
-  };
-
-  // Item image upload props
-  const itemUploadProps = {
-    onRemove: (file) => {
-      const index = itemImageFileList.indexOf(file);
-      const newFileList = itemImageFileList.slice();
-      newFileList.splice(index, 1);
-      setItemImageFileList(newFileList);
-    },
-    beforeUpload: (file) => {
-      // Validate file type
-      const isImage = file.type.startsWith('image/');
-      if (!isImage) {
-        message.error('You can only upload image files!');
-        return Upload.LIST_IGNORE;
-      }
-      
-      // Validate file size (5MB limit)
-      const isLt5M = file.size / 1024 / 1024 < 5;
-      if (!isLt5M) {
-        message.error('Image must be smaller than 5MB!');
-        return Upload.LIST_IGNORE;
-      }
-      
-      // Add to file list
-      setItemImageFileList([...itemImageFileList, file]);
-      return false; // Prevent automatic upload
-    },
-    fileList: itemImageFileList,
-    listType: 'picture-card',
+  // Open series images modal
+  const openSeriesImagesModal = () => {
+    setSeriesImagesModalVisible(true);
   };
 
   // Table columns for items
@@ -320,26 +331,75 @@ const BlindboxEdit = () => {
       key: 'actions',
       render: (_, record) => (
         <Space size="small">
-          <Button
-            type="primary"
-            size="small"
-            icon={<UploadOutlined />}
-            onClick={() => openItemImageUploadModal(record)}
-          >
-            Upload Images
-          </Button>
+          <Tooltip title="View Images">
+            <Button
+              type="text"
+              icon={<EyeOutlined />}
+              onClick={() => {
+                setSelectedItem(record);
+                // TODO: Implement view images modal
+              }}
+              disabled={!record.imageUrls || record.imageUrls.length === 0}
+            />
+          </Tooltip>
+          <Tooltip title="Upload Image">
+            <Button
+              type="primary"
+              size="small"
+              icon={<UploadOutlined />}
+              onClick={() => openItemImageUploadModal(record)}
+            >
+              Upload Image
+            </Button>
+          </Tooltip>
         </Space>
       ),
     },
   ];
 
+  // Show loading state
   if (initialLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Spin size="large" />
+        <Spin size="large" tip="Loading blindbox data..." />
       </div>
     );
   }
+
+  // Show error state
+  if (error && !selectedSeries) {
+    return (
+      <div className="p-6">
+        <Alert
+          message="Error Loading Blindbox"
+          description={
+            <div>
+              <p>{error}</p>
+              <Button 
+                type="primary"
+                onClick={goBack}
+                className="mt-4"
+              >
+                Back to List
+              </Button>
+            </div>
+          }
+          type="error"
+          showIcon
+        />
+      </div>
+    );
+  }
+
+  // Temporary debug card to show what's happening
+  const debugInfo = {
+    id: id,
+    selectedSeriesExists: !!selectedSeries,
+    formInitialized: form.getFieldsValue(true),
+    loading,
+    initialLoading,
+    error
+  };
 
   return (
     <div className="blindbox-edit-container">
@@ -453,7 +513,7 @@ const BlindboxEdit = () => {
               </Row>
               
               <Row gutter={24}>
-                <Col xs={24} md={12}>
+                <Col xs={24} md={8}>
                   <Form.Item
                     name="availableBoxUnits"
                     label="Available Box Units"
@@ -470,7 +530,7 @@ const BlindboxEdit = () => {
                   </Form.Item>
                 </Col>
                 
-                <Col xs={24} md={12}>
+                <Col xs={24} md={8}>
                   <Form.Item
                     name="availablePackageUnits"
                     label="Available Package Units"
@@ -486,15 +546,40 @@ const BlindboxEdit = () => {
                     />
                   </Form.Item>
                 </Col>
+                
+                <Col xs={24} md={8}>
+                  <Form.Item
+                    name="numberOfBlindboxesPerPackage"
+                    label="Boxes Per Package"
+                    rules={[
+                      { required: true, message: 'Please enter boxes per package' },
+                      { type: 'number', min: 1, message: 'Must be at least 1' }
+                    ]}
+                  >
+                    <InputNumber
+                      style={{ width: '100%' }}
+                      placeholder="Enter boxes per package"
+                      min={1}
+                    />
+                  </Form.Item>
+                </Col>
               </Row>
               
               <Divider orientation="left">Series Images</Divider>
               
               {selectedSeries && selectedSeries.seriesImageUrls && selectedSeries.seriesImageUrls.length > 0 ? (
                 <div className="mb-6">
-                  <Text strong className="block mb-2">Current Images:</Text>
+                  <div className="flex justify-between items-center mb-2">
+                    <Text strong className="block">Current Images:</Text>
+                    <Button 
+                      type="link" 
+                      onClick={openSeriesImagesModal}
+                    >
+                      View All Images
+                    </Button>
+                  </div>
                   <div className="flex flex-wrap gap-2">
-                    {selectedSeries.seriesImageUrls.map((url, index) => (
+                    {selectedSeries.seriesImageUrls.slice(0, 5).map((url, index) => (
                       <div key={index} className="relative">
                         <Image
                           src={url}
@@ -505,6 +590,11 @@ const BlindboxEdit = () => {
                         />
                       </div>
                     ))}
+                    {selectedSeries.seriesImageUrls.length > 5 && (
+                      <div className="flex items-center justify-center w-20 h-20 bg-gray-100 rounded">
+                        <Text type="secondary">+{selectedSeries.seriesImageUrls.length - 5} more</Text>
+                      </div>
+                    )}
                   </div>
                 </div>
               ) : (
@@ -518,15 +608,20 @@ const BlindboxEdit = () => {
                 label="Upload New Series Images"
                 extra="Upload new images for this blindbox series."
               >
-                <Dragger {...seriesUploadProps} multiple listType="picture-card">
-                  <p className="ant-upload-drag-icon">
-                    <InboxOutlined />
-                  </p>
-                  <p className="ant-upload-text">Click or drag files to this area to upload</p>
-                  <p className="ant-upload-hint">
-                    Supports JPG, PNG, WEBP. Max size: 5MB per image.
-                  </p>
-                </Dragger>
+                <Upload
+                  listType="picture-card"
+                  fileList={fileList}
+                  onChange={handleSeriesImageChange}
+                  beforeUpload={beforeSeriesImageUpload}
+                  multiple
+                >
+                  {fileList.length >= 5 ? null : (
+                    <div>
+                      <PlusOutlined />
+                      <div style={{ marginTop: 8 }}>Upload</div>
+                    </div>
+                  )}
+                </Upload>
               </Form.Item>
               
               <Divider />
@@ -557,28 +652,34 @@ const BlindboxEdit = () => {
             <div className="mb-4 flex justify-between items-center">
               <Title level={4} className="mb-0">Blindbox Items</Title>
               
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                disabled
-              >
-                Add New Item
-              </Button>
+              <Tooltip title="Items can only be added during creation">
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  disabled
+                >
+                  Add New Item
+                </Button>
+              </Tooltip>
             </div>
             
-            <Table
-              dataSource={selectedSeries?.items || []}
-              columns={itemColumns}
-              rowKey="id"
-              pagination={{ pageSize: 10 }}
-            />
+            {selectedSeries && selectedSeries.items && selectedSeries.items.length > 0 ? (
+              <Table
+                dataSource={selectedSeries.items}
+                columns={itemColumns}
+                rowKey="id"
+                pagination={{ pageSize: 10 }}
+              />
+            ) : (
+              <Empty description="No items found for this blindbox series" />
+            )}
           </TabPane>
         </Tabs>
       </Card>
       
       {/* Item Image Upload Modal */}
       <Modal
-        title={`Upload Images for Item #${selectedItem?.id || ''}`}
+        title={`Upload Image for Item #${selectedItem?.id || ''}`}
         open={itemImageModalVisible}
         onCancel={() => setItemImageModalVisible(false)}
         footer={[
@@ -590,7 +691,8 @@ const BlindboxEdit = () => {
             type="primary"
             loading={uploadingItemImages}
             onClick={handleItemImageUpload}
-            disabled={itemImageFileList.length === 0}
+            disabled={!itemImageFile}
+            className="bg-black hover:bg-gray-800"
           >
             Upload
           </Button>
@@ -621,8 +723,10 @@ const BlindboxEdit = () => {
             <Divider />
             
             <Upload
-              {...itemUploadProps}
-              multiple
+              listType="picture-card"
+              beforeUpload={() => false}
+              onChange={handleItemImageChange}
+              maxCount={1}
             >
               <div>
                 <PlusOutlined />
@@ -634,6 +738,40 @@ const BlindboxEdit = () => {
               Supports JPG, PNG, WEBP. Max size: 5MB per image.
             </div>
           </>
+        )}
+      </Modal>
+      
+      {/* Series Images Modal */}
+      <Modal
+        title="Series Images"
+        open={seriesImagesModalVisible}
+        onCancel={() => setSeriesImagesModalVisible(false)}
+        footer={[
+          <Button key="cancel" onClick={() => setSeriesImagesModalVisible(false)}>
+            Close
+          </Button>
+        ]}
+        width={800}
+      >
+        {selectedSeries && selectedSeries.seriesImageUrls && (
+          <div className="series-images-gallery">
+            <Row gutter={[16, 16]}>
+              {selectedSeries.seriesImageUrls.map((url, index) => (
+                <Col xs={24} sm={12} md={8} lg={6} key={index}>
+                  <div className="p-2 border border-gray-200 rounded">
+                    <Image
+                      src={url}
+                      alt={`Series Image ${index + 1}`}
+                      className="w-full h-32 object-contain"
+                    />
+                    <div className="text-center mt-2">
+                      <Text type="secondary">Image #{index + 1}</Text>
+                    </div>
+                  </div>
+                </Col>
+              ))}
+            </Row>
+          </div>
         )}
       </Modal>
     </div>

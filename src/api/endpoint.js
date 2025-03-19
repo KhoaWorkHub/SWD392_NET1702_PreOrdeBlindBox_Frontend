@@ -16,7 +16,12 @@ const endpoints = {
   },
   blindbox: {
     getAllSeries: '/blindbox', 
-    getSeriesById: (id) => `/blindbox/${id}`, 
+    getSeriesById: (id) => `/blindbox/${id}`,
+    createSeries: '/blindbox',  
+    updateSeries: (id) => `/blindbox/${id}`,
+    deleteSeries: (id) => `/blindbox/${id}`,
+    uploadItemImages: (itemId) => `/blindbox/items/${itemId}/images`,
+    uploadSeriesImages: (seriesId) => `/blindbox/${seriesId}/images`
   },
   cart: {
     getCart: '/cart',
