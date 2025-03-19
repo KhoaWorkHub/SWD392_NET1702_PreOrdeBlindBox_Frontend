@@ -30,6 +30,8 @@ import {
   RightOutlined,
   UserOutlined,
   ShoppingOutlined,
+  ReloadOutlined,
+  InfoCircleOutlined,
 } from "@ant-design/icons";
 import useCart from "../../hooks/useCart";
 import useAuth from "../../hooks/useAuth";
@@ -54,6 +56,11 @@ const CheckoutPage = () => {
   const [loading, setLoading] = useState(false);
   const [contactInfo, setContactInfo] = useState(null);
   
+  // State for checkout information
+  const [checkoutInfo, setCheckoutInfo] = useState(null);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [checkoutError, setCheckoutError] = useState(null);
+  
   // Protect this route for authenticated users only
   useEffect(() => {
     if (!isAuthenticated) {
@@ -66,6 +73,89 @@ const CheckoutPage = () => {
       navigate("/cart");
     }
   }, [isAuthenticated, cartItems, cartLoading, navigate]);
+
+  // Fetch checkout information when component loads
+  useEffect(() => {
+    if (isAuthenticated && cartItems.length > 0 && !cartLoading) {
+      fetchCheckoutInfo();
+    }
+  }, [isAuthenticated, cartItems, cartLoading]);
+
+  // Function to fetch checkout information
+  const fetchCheckoutInfo = async () => {
+    try {
+      setCheckoutLoading(true);
+      const response = await checkoutService.getCheckoutInfo();
+      
+      if (response && response.metadata) {
+        setCheckoutInfo(response.metadata);
+        setCheckoutError(null);
+      } else {
+        console.error('Unexpected response format:', response);
+        setCheckoutError('Invalid checkout data format');
+      }
+    } catch (err) {
+      console.error('Error fetching checkout information:', err);
+      setCheckoutError(err.message || 'Failed to load checkout information');
+    } finally {
+      setCheckoutLoading(false);
+    }
+  };
+
+  // Helper functions for checkout calculations
+  const formatCurrency = (amount) => {
+    return Number(amount || 0).toLocaleString() + " ₫";
+  };
+
+  // Calculate the total items discounted price from checkout items
+  const calculateItemsTotal = () => {
+    if (checkoutInfo && checkoutInfo.items && checkoutInfo.items.length > 0) {
+      return checkoutInfo.items.reduce((total, item) => total + (item.discountedTotalPrice || 0), 0);
+    }
+    return totalPrice;
+  };
+
+  // Calculate total amount (if null)
+  const calculateTotal = () => {
+    if (checkoutInfo) {
+      // Use estimatedTotalAmount if available
+      if (checkoutInfo.estimatedTotalAmount) {
+        return checkoutInfo.estimatedTotalAmount;
+      }
+      // Fall back to totalAmount if available
+      if (checkoutInfo.totalAmount) {
+        return checkoutInfo.totalAmount;
+      }
+      // As last resort, use the sum of item prices
+      return calculateItemsTotal();
+    }
+    return totalPrice;
+  };
+
+  // Calculate remaining amount (if null)
+  const calculateRemainingAmount = () => {
+    if (checkoutInfo) {
+      // If remainingAmount is provided, use it
+      if (checkoutInfo.remainingAmount !== null && checkoutInfo.remainingAmount !== undefined) {
+        return checkoutInfo.remainingAmount;
+      }
+      // Otherwise calculate it from total and deposit
+      if (checkoutInfo.depositAmount > 0) {
+        return calculateTotal() - checkoutInfo.depositAmount;
+      }
+    }
+    return 0;
+  };
+
+  // Get deposit amount or zero if not available
+  const getDepositAmount = () => {
+    return checkoutInfo && checkoutInfo.depositAmount ? checkoutInfo.depositAmount : 0;
+  };
+
+  // Check if this is a preorder with deposit
+  const isPreorder = () => {
+    return checkoutInfo && checkoutInfo.depositAmount > 0;
+  };
 
   // Step configuration
   const steps = [
@@ -170,7 +260,6 @@ const CheckoutPage = () => {
     setLoading(true);
   
     try {
-      // Gọi API checkout
       const checkoutData = {
         phoneNumber: contactInfo.phoneNumber,
         userAddress: contactInfo.userAddress,
@@ -202,7 +291,7 @@ const CheckoutPage = () => {
               message.error("Unable to process payment. Please try again.");
             });
         } 
-        // Nếu response chứa paymentUrl trực tiếp
+        // If response contains paymentUrl directly
         else if (response.metadata && response.metadata.paymentUrl) {
           window.location.href = response.metadata.paymentUrl;
         } 
@@ -238,13 +327,58 @@ const CheckoutPage = () => {
               </Table.Summary.Cell>
               <Table.Summary.Cell className="text-right">
                 <Text strong className="checkout-cart-total-price">
-                  {Number(totalPrice).toLocaleString()} ₫
+                  {formatCurrency(calculateItemsTotal())}
                 </Text>
               </Table.Summary.Cell>
             </Table.Summary.Row>
+            {isPreorder() && (
+              <>
+                <Table.Summary.Row>
+                  <Table.Summary.Cell colSpan={2}></Table.Summary.Cell>
+                  <Table.Summary.Cell className="text-right">
+                    <Text strong className="text-blue-600">Required Deposit:</Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell className="text-right">
+                    <Text strong className="checkout-cart-deposit text-blue-600">
+                      {formatCurrency(getDepositAmount())}
+                    </Text>
+                  </Table.Summary.Cell>
+                </Table.Summary.Row>
+                <Table.Summary.Row>
+                  <Table.Summary.Cell colSpan={2}></Table.Summary.Cell>
+                  <Table.Summary.Cell className="text-right">
+                    <Text>Remaining Amount:</Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell className="text-right">
+                    <Text>
+                      {formatCurrency(calculateRemainingAmount())}
+                    </Text>
+                  </Table.Summary.Cell>
+                </Table.Summary.Row>
+              </>
+            )}
           </Table.Summary>
         )}
       />
+      
+      {isPreorder() && (
+        <Alert
+          className="mt-4 mb-4"
+          message="Preorder Payment Information"
+          description={
+            <div>
+              <p>This is a preorder purchase requiring an initial deposit payment.</p>
+              <ul className="pl-5 list-disc">
+                <li>You'll pay <strong>{formatCurrency(getDepositAmount())}</strong> now as a deposit.</li>
+                <li>The remaining <strong>{formatCurrency(calculateRemainingAmount())}</strong> will be charged when your order is ready.</li>
+                <li>We'll notify you when it's time to complete your payment.</li>
+              </ul>
+            </div>
+          }
+          type="info"
+          showIcon
+        />
+      )}
       
       <div className="checkout-step-actions">
         <Button onClick={() => navigate("/cart")} className="mr-2">
@@ -357,8 +491,33 @@ const CheckoutPage = () => {
       
       <div className="checkout-summary-row">
         <Text>Items ({itemCount}):</Text>
-        <Text>{Number(totalPrice).toLocaleString()} ₫</Text>
+        <Text>{formatCurrency(calculateItemsTotal())}</Text>
       </div>
+      
+      {isPreorder() && (
+        <>
+          <div className="checkout-summary-row">
+            <Text strong className="text-blue-600">Required Deposit:</Text>
+            <Text strong className="text-blue-600">{formatCurrency(getDepositAmount())}</Text>
+          </div>
+          <div className="checkout-summary-row">
+            <Text>Remaining Amount:</Text>
+            <Text>{formatCurrency(calculateRemainingAmount())}</Text>
+          </div>
+          <Alert
+            className="my-3"
+            message={
+              <div className="text-sm">
+                You'll pay <strong>{formatCurrency(getDepositAmount())}</strong> now. 
+                Remaining balance due when your order is ready.
+              </div>
+            }
+            type="info"
+            showIcon
+            icon={<InfoCircleOutlined />}
+          />
+        </>
+      )}
       
       <div className="checkout-summary-row">
         <Text>Shipping:</Text>
@@ -368,11 +527,20 @@ const CheckoutPage = () => {
       <Divider />
       
       <div className="checkout-summary-row checkout-summary-total">
-        <Text strong>Total:</Text>
+        <Text strong>Total Order Value:</Text>
         <Text strong className="checkout-total-price">
-          {Number(totalPrice).toLocaleString()} ₫
+          {formatCurrency(calculateTotal())}
         </Text>
       </div>
+      
+      {isPreorder() && (
+        <div className="checkout-summary-row checkout-summary-to-pay mt-2">
+          <Text strong className="text-lg text-blue-700">Amount to Pay Now:</Text>
+          <Text strong className="checkout-to-pay-price text-lg text-blue-700">
+            {formatCurrency(getDepositAmount())}
+          </Text>
+        </div>
+      )}
       
       <Divider />
       
@@ -416,7 +584,12 @@ const CheckoutPage = () => {
                 <div>
                   <Text strong>VN Pay</Text>
                   <div>
-                    <Text type="secondary">You'll be redirected to VNPay to complete payment</Text>
+                    <Text type="secondary">
+                      {isPreorder() 
+                        ? `You'll be redirected to VNPay to pay the deposit (${formatCurrency(getDepositAmount())})`
+                        : "You'll be redirected to VNPay to complete payment"
+                      }
+                    </Text>
                   </div>
                 </div>
               </div>
@@ -428,7 +601,11 @@ const CheckoutPage = () => {
       <Alert
         className="mt-4"
         message="Important"
-        description="By proceeding with payment, you agree to our Terms of Service and Privacy Policy."
+        description={
+          isPreorder()
+            ? "By proceeding with payment, you agree to pay the deposit now and the remaining amount when your order is ready. You also agree to our Terms of Service and Privacy Policy."
+            : "By proceeding with payment, you agree to our Terms of Service and Privacy Policy."
+        }
         type="info"
         showIcon
       />
@@ -445,7 +622,7 @@ const CheckoutPage = () => {
           size="large"
           icon={<SafetyOutlined />}
         >
-          Complete Order
+          {isPreorder() ? "Pay Deposit Now" : "Complete Order"}
         </Button>
       </div>
     </Card>
@@ -465,11 +642,150 @@ const CheckoutPage = () => {
     }
   };
 
+  // Render Order Summary sidebar
+  const renderOrderSummary = () => (
+    <Card className="checkout-summary-card">
+      <div className="flex justify-between items-center mb-2">
+        <Title level={4} style={{ margin: 0 }}>Order Summary</Title>
+        {checkoutLoading && <Spin size="small" />}
+      </div>
+      
+      {checkoutError && (
+        <div className="flex items-center mb-2">
+          <Text type="danger" className="mr-2">Failed to load details</Text>
+          <Button 
+            size="small" 
+            icon={<ReloadOutlined />} 
+            onClick={fetchCheckoutInfo}
+          />
+        </div>
+      )}
+      
+      <Divider />
+      
+      <div className="checkout-summary-row">
+        <Text>Items ({itemCount}):</Text>
+        <Text>{formatCurrency(calculateItemsTotal())}</Text>
+      </div>
+      
+      {isPreorder() && (
+        <>
+          <div className="checkout-summary-row">
+            <Text strong className="text-blue-600">Required Deposit:</Text>
+            <Text strong className="text-blue-600">
+              {formatCurrency(getDepositAmount())}
+            </Text>
+          </div>
+          <div className="checkout-summary-row">
+            <Text>Remaining Amount:</Text>
+            <Text>{formatCurrency(calculateRemainingAmount())}</Text>
+          </div>
+          <div className="bg-gray-50 p-2 rounded text-xs mb-3">
+            <Text type="secondary">
+              Preorder: You'll pay a deposit now and the remaining amount later.
+            </Text>
+          </div>
+        </>
+      )}
+      
+      <div className="checkout-summary-row">
+        <Text>Shipping:</Text>
+        <Text>Free</Text>
+      </div>
+      
+      <Divider />
+      
+      <div className="checkout-summary-row checkout-summary-total">
+        <Text strong>Total Order Value:</Text>
+        <Text strong className="checkout-total-price">
+          {formatCurrency(calculateTotal())}
+        </Text>
+      </div>
+      
+      {isPreorder() && (
+        <div className="checkout-summary-row checkout-to-pay mt-2">
+          <Text strong>To Pay Now:</Text>
+          <Text strong className="text-blue-700">
+            {formatCurrency(getDepositAmount())}
+          </Text>
+        </div>
+      )}
+
+      {/* Cart Items Mini Preview */}
+      <Divider />
+      <Title level={5}>Your Items</Title>
+      
+      <div className="checkout-items-mini-preview">
+        {cartItems.map((item) => (
+          <div key={item.id} className="checkout-mini-item">
+            <div className="checkout-mini-image">
+              <Image
+                src={item.imageUrl || "https://placehold.co/60x60?text=No+Image"}
+                alt={item.name}
+                width={40}
+                height={40}
+                preview={false}
+                fallback="https://placehold.co/60x60?text=No+Image"
+              />
+            </div>
+            <div className="checkout-mini-details">
+              <Text className="checkout-mini-name">{item.name}</Text>
+              <div>
+                <Text type="secondary" className="checkout-mini-meta">
+                  {item.quantity} x {Number(item.price).toLocaleString()} ₫
+                </Text>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Continue Shopping Button */}
+      <div className="mt-6">
+        <Button 
+          icon={<ShoppingOutlined />}
+          onClick={() => navigate("/blindbox")}
+          block
+        >
+          Continue Shopping
+        </Button>
+      </div>
+    </Card>
+  );
+
   // If the user is not authenticated or cart is empty, show loading
   if (!isAuthenticated || (cartItems.length === 0 && cartLoading)) {
     return (
       <div className="h-96 flex items-center justify-center">
         <Spin size="large" />
+      </div>
+    );
+  }
+
+  // Show loading when fetching checkout info for the first time
+  if (checkoutLoading && !checkoutInfo && !checkoutError) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <Breadcrumb className="mb-6">
+          <Breadcrumb.Item>
+            <Link to="/">
+              <HomeOutlined /> Home
+            </Link>
+          </Breadcrumb.Item>
+          <Breadcrumb.Item>
+            <Link to="/cart">
+              <ShoppingCartOutlined /> Cart
+            </Link>
+          </Breadcrumb.Item>
+          <Breadcrumb.Item>Checkout</Breadcrumb.Item>
+        </Breadcrumb>
+
+        <Title level={2} className="mb-6">Checkout</Title>
+        
+        <div className="h-48 flex flex-col items-center justify-center">
+          <Spin size="large" />
+          <Text className="mt-4">Loading checkout information...</Text>
+        </div>
       </div>
     );
   }
@@ -511,69 +827,7 @@ const CheckoutPage = () => {
 
         <Col xs={24} lg={8}>
           {/* Order Summary Card */}
-          <Card className="checkout-summary-card">
-            <Title level={4}>Order Summary</Title>
-            <Divider />
-            
-            <div className="checkout-summary-row">
-              <Text>Items ({itemCount}):</Text>
-              <Text>{Number(totalPrice).toLocaleString()} ₫</Text>
-            </div>
-            
-            <div className="checkout-summary-row">
-              <Text>Shipping:</Text>
-              <Text>Free</Text>
-            </div>
-            
-            <Divider />
-            
-            <div className="checkout-summary-row checkout-summary-total">
-              <Text strong>Total:</Text>
-              <Text strong className="checkout-total-price">
-                {Number(totalPrice).toLocaleString()} ₫
-              </Text>
-            </div>
-
-            {/* Cart Items Mini Preview */}
-            <Divider />
-            <Title level={5}>Your Items</Title>
-            
-            <div className="checkout-items-mini-preview">
-              {cartItems.map((item) => (
-                <div key={item.id} className="checkout-mini-item">
-                  <div className="checkout-mini-image">
-                    <Image
-                      src={item.imageUrl || "https://placehold.co/60x60?text=No+Image"}
-                      alt={item.name}
-                      width={40}
-                      height={40}
-                      preview={false}
-                      fallback="https://placehold.co/60x60?text=No+Image"
-                    />
-                  </div>
-                  <div className="checkout-mini-details">
-                    <Text className="checkout-mini-name">{item.name}</Text>
-                    <div>
-                      <Text type="secondary" className="checkout-mini-meta">
-                        {item.quantity} x {Number(item.price).toLocaleString()} ₫
-                      </Text>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Continue Shopping Button */}
-            <div className="mt-6">
-              <Button 
-                icon={<ShoppingOutlined />}
-                onClick={() => navigate("/blindbox")}
-                block
-              >
-                Continue Shopping
-              </Button>
-            </div>
-          </Card>
+          {renderOrderSummary()}
 
           {/* Security Notice */}
           <Card className="checkout-security-card mt-4">

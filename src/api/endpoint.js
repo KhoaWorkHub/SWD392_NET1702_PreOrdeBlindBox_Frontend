@@ -20,6 +20,7 @@ const endpoints = {
     clearCart: '/cart'
   },
   checkout: {
+    getCheckoutInfo: '/checkout',
     processCheckout: '/checkout/deposit',
     paymentCallback: '/payment/vn-pay-callback',
     verifyPayment: (preorderId) => `/remaining-amount/${preorderId}`

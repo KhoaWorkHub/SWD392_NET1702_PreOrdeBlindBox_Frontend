@@ -5,6 +5,21 @@ import endpoints from "../endpoint";
  * Service for handling Checkout related API calls
  */
 const checkoutService = {
+    /**
+   * Get checkout information for the current cart
+   * @returns {Promise} - Promise with response data containing checkout information
+   */
+    getCheckoutInfo: async () => {
+      try {
+        const response = await axiosInstance.get(endpoints.checkout.getCheckoutInfo);
+        return response.data;
+      } catch (error) {
+        console.error("Error fetching checkout info:", error);
+        throw error.response?.data || { 
+          message: "An error occurred while fetching checkout information. Please try again." 
+        };
+      }
+    },
   /**
    * Process checkout with user's shipping information
    * 
