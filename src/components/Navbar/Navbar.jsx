@@ -112,7 +112,7 @@ const Navbar = () => {
             className="bg-red-600 px-3 py-1 cursor-pointer"
             onClick={() => navigate('/')}
           >
-            <span className="text-white font-bold text-lg">POP MART</span>
+            <span className="text-white font-bold text-lg">HỘP ĐUI</span>
           </div>
         </div>
 
