@@ -25,6 +25,9 @@ import StaffDashboard from "./components/Dashboard/Staff/StaffDashboard.jsx";
 import UserManagement from "./components/Dashboard/UserMangement/UserManagement.jsx";
 import useAuth from "./hooks/useAuth.js";
 import { NotFoundPage } from "./components/ErrorPage/ErrorPage.jsx";
+import BlindboxEdit from "./components/Dashboard/BlindboxEdit/BlindboxEdit.jsx";
+import BlindboxCreate from "./components/Dashboard/BlindboxCreate/BlindboxCreate.jsx";
+import BlindboxList from "./components/Dashboard/BlindboxList/BlindboxList.jsx";
 
 // Create a separate component for the routes
 const AppRoutes = () => {
@@ -45,7 +48,6 @@ const AppRoutes = () => {
 
   return (
     <Routes>
-      {/* Dashboard routes */}
       <Route
         path="/dashboard"
         element={
@@ -77,20 +79,31 @@ const AppRoutes = () => {
             <Route index element={<UserManagement />} />
           </Route>
 
-          {/* Common routes for both admin and staff */}
+          {/* Blindbox Management Routes */}
           <Route path="blindboxes">
-            <Route path="list" element={<div>Blindbox List</div>} />
+            <Route path="list" element={<BlindboxList />} />
             <Route
               path="create"
               element={
                 <ProtectedRoute
                   allowedRoles={["ADMIN"]}
-                  redirectPath="/dashboard"
-                />
+                  redirectPath="/dashboard/blindboxes/list"
+                >
+                  <BlindboxCreate />
+                </ProtectedRoute>
               }
-            >
-              <Route index element={<div>Create Blindbox</div>} />
-            </Route>
+            />
+            <Route
+              path="edit/:id"
+              element={
+                <ProtectedRoute
+                  allowedRoles={["ADMIN"]}
+                  redirectPath="/dashboard/blindboxes/list"
+                >
+                  <BlindboxEdit />
+                </ProtectedRoute>
+              }
+            />
           </Route>
 
           <Route path="orders" element={<div>Orders Management</div>} />
