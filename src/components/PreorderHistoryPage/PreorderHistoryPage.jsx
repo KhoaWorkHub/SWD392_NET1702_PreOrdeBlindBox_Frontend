@@ -34,6 +34,7 @@ const { Title, Text } = Typography;
 
 /**
  * PreorderHistoryPage component for displaying a user's preorder history
+ * Sorted by ID in descending order (newest first)
  *
  * @returns {JSX.Element} The PreorderHistoryPage component
  */
@@ -60,7 +61,9 @@ const PreorderHistoryPage = () => {
     try {
       const response = await preorderService.getPreorderHistory();
       if (response && response.status === true && response.metadata) {
-        setPreorderHistory(response.metadata);
+        // Sắp xếp preorder theo ID giảm dần (ID lớn nhất lên đầu)
+        const sortedPreorders = [...response.metadata].sort((a, b) => b.id - a.id);
+        setPreorderHistory(sortedPreorders);
       } else {
         throw new Error("Failed to load preorder history");
       }
@@ -131,10 +134,16 @@ const PreorderHistoryPage = () => {
   // Define columns for the preorder history table
   const columns = [
     {
+      title: "ID",
+      dataIndex: "id",
+      key: "id",
+      render: (id) => <Text strong>#{id}</Text>,
+    },
+    {
       title: "Order Code",
       dataIndex: "orderCode",
       key: "orderCode",
-      render: (text) => <Text strong>{text}</Text>,
+      render: (text) => <Text>{text}</Text>,
     },
     {
       title: "Status",
@@ -156,7 +165,7 @@ const PreorderHistoryPage = () => {
       key: "totalAmount",
       render: (amount) => (
         <Text strong className="text-red-600">
-          {Number(amount).toLocaleString()} ₫
+          {amount ? Number(amount).toLocaleString() : "Not Finalized"} {amount ? "₫" : ""}
         </Text>
       ),
     },
