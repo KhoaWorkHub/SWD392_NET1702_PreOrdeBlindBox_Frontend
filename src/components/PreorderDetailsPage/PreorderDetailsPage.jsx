@@ -263,24 +263,24 @@ const PreorderDetailsPage = () => {
         </div>
       ),
     },
-    {
-      title: "Rarity",
-      dataIndex: "rarity",
-      key: "rarity",
-      render: (_, record) => (
-        record.revealedItem?.itemChance ? (
-          <Tag color={
-            record.revealedItem.itemChance <= 5 ? "red" : 
-            record.revealedItem.itemChance <= 15 ? "orange" : 
-            record.revealedItem.itemChance <= 25 ? "blue" : "green"
-          }>
-            {record.revealedItem.itemChance}% chance
-          </Tag>
-        ) : (
-          <Tag color="default">Unknown</Tag>
-        )
-      ),
-    },
+    // {
+    //   title: "Rarity",
+    //   dataIndex: "rarity",
+    //   key: "rarity",
+    //   render: (_, record) => (
+    //     record.revealedItem?.itemChance ? (
+    //       <Tag color={
+    //         record.revealedItem.itemChance <= 5 ? "red" : 
+    //         record.revealedItem.itemChance <= 15 ? "orange" : 
+    //         record.revealedItem.itemChance <= 25 ? "blue" : "green"
+    //       }>
+    //         {record.revealedItem.itemChance}% chance
+    //       </Tag>
+    //     ) : (
+    //       <Tag color="default">Unknown</Tag>
+    //     )
+    //   ),
+    // },
   ];
 
   // Define columns for payments table
