@@ -22,6 +22,7 @@ import {
   Timeline,
   Badge,
   Popover,
+  Empty,
 } from "antd";
 import {
   HomeOutlined,
@@ -90,7 +91,7 @@ const BlindboxDetailPage = () => {
     if (!blindbox || !blindbox.activeCampaign) return;
 
     // Find the active tier (PROCESSING status)
-    const processingTier = blindbox.activeCampaign.campaignTiers.find(
+    const processingTier = blindbox.activeCampaign.campaignTiers?.find(
       (tier) => tier.tierStatus === "PROCESSING"
     );
 
@@ -138,7 +139,11 @@ const BlindboxDetailPage = () => {
       console.log("Blindbox detail response:", response);
 
       if (response && response.status === true && response.metadata) {
+        // Set the blindbox data from the response
         setBlindbox(response.metadata);
+        
+        // Log the structure to help with debugging
+        console.log("Blindbox data structure:", response.metadata);
       } else {
         setError("Failed to load blind box details");
       }
@@ -193,14 +198,13 @@ const BlindboxDetailPage = () => {
   };
 
   // Get tier progress percentage
-  // Updated getTierProgress method
   const getTierProgress = (tier) => {
-    if (!tier || !blindbox.activeCampaign) return 0;
+    if (!tier || !blindbox?.activeCampaign) return 0;
 
     // For PROCESSING tier, calculate percentage of progress
     if (tier.tierStatus === "PROCESSING") {
       // Find the previous tier
-      const previousTier = blindbox.activeCampaign.campaignTiers.find(
+      const previousTier = blindbox.activeCampaign.campaignTiers?.find(
         (t) => t.tierOrder === tier.tierOrder - 1
       );
 
@@ -316,7 +320,6 @@ const BlindboxDetailPage = () => {
                   <Text type="secondary">
                     {tier.tierStatus === "ACHIEVED" ? (
                       <span className="text-green-600">
-                        {" "}
                         {tier.currentCount} / {tier.thresholdQuantity}{" "}
                         Completed!
                       </span>
@@ -431,9 +434,9 @@ const BlindboxDetailPage = () => {
           <Col xs={24} md={isGroup ? 12 : 24}>
             <div className="flex items-baseline">
               <Title level={3} className="text-red-600 mb-0 mr-4">
-                {Number(discountedPrice).toLocaleString()} ₫
+                {Number(discountedPrice || basePrice).toLocaleString()} ₫
               </Title>
-              {discountedPrice < basePrice && (
+              {discountedPrice && discountedPrice < basePrice && (
                 <Text delete type="secondary" className="text-lg">
                   {Number(basePrice).toLocaleString()} ₫
                 </Text>
@@ -452,12 +455,12 @@ const BlindboxDetailPage = () => {
                 <div className="text-center">
                   <Text strong>Deposit Required: </Text>
                   <Text className="text-orange-600 text-lg font-semibold">
-                    {Number(depositAmount).toLocaleString()} ₫
+                    {Number(depositAmount || 0).toLocaleString()} ₫
                   </Text>
                   <div className="mt-1">
                     <Text type="secondary">
                       Remaining balance:{" "}
-                      {Number(remainingAmount).toLocaleString()} ₫
+                      {Number(remainingAmount || 0).toLocaleString()} ₫
                       <Tooltip title="Remaining balance will be charged after campaign ends based on final tier achieved">
                         <QuestionCircleOutlined className="ml-1" />
                       </Tooltip>
@@ -645,6 +648,9 @@ const BlindboxDetailPage = () => {
     );
   }
 
+  // Debug output (remove in production)
+  console.log("Current blindbox state:", blindbox);
+  
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Breadcrumb Navigation */}
@@ -732,10 +738,10 @@ const BlindboxDetailPage = () => {
                   <Text type="secondary">Series ID: {blindbox.id}</Text>
                   <div className="mt-2 flex gap-2">
                     <Tag color="blue">
-                      Available Boxes: {blindbox.availableBoxUnits}
+                      Available Boxes: {blindbox.availableBoxUnits || 0}
                     </Tag>
                     <Tag color="purple">
-                      Available Packages: {blindbox.availablePackageUnits}
+                      Available Packages: {blindbox.availablePackageUnits || 0}
                     </Tag>
                     {blindbox.active ? (
                       <Tag color="green">Active</Tag>
@@ -775,14 +781,14 @@ const BlindboxDetailPage = () => {
                     className="mb-4"
                   >
                     <Radio.Button value="BOX">
-                      Single Box ({Number(blindbox.boxPrice).toLocaleString()}{" "}
+                      Single Box ({Number(blindbox.boxPrice || 0).toLocaleString()}{" "}
                       ₫)
                     </Radio.Button>
                     {blindbox.packagePrice &&
                       blindbox.availablePackageUnits > 0 && (
                         <Radio.Button value="PACKAGE">
                           Package (
-                          {Number(blindbox.packagePrice).toLocaleString()} ₫)
+                          {Number(blindbox.packagePrice || 0).toLocaleString()} ₫)
                         </Radio.Button>
                       )}
                   </Radio.Group>
@@ -801,8 +807,8 @@ const BlindboxDetailPage = () => {
                     />
                     <Text type="secondary">
                       {selectedProductType === "BOX"
-                        ? `${blindbox.availableBoxUnits} boxes available`
-                        : `${blindbox.availablePackageUnits} packages available`}
+                        ? `${blindbox.availableBoxUnits || 0} boxes available`
+                        : `${blindbox.availablePackageUnits || 0} packages available`}
                     </Text>
                   </div>
 
@@ -856,7 +862,7 @@ const BlindboxDetailPage = () => {
                           <p>
                             This is a pre-order campaign. You will be charged a
                             50% deposit (
-                            {Number(depositAmount).toLocaleString()} ₫) now, and
+                            {Number(depositAmount || 0).toLocaleString()} ₫) now, and
                             the remaining balance after the campaign ends.
                           </p>
                           <p className="mt-2">
@@ -919,22 +925,22 @@ const BlindboxDetailPage = () => {
                       <Col xs={24} sm={12} md={8}>
                         <Text strong>Box Price:</Text>
                         <div>
-                          {Number(blindbox.boxPrice).toLocaleString()} ₫
+                          {Number(blindbox.boxPrice || 0).toLocaleString()} ₫
                         </div>
                       </Col>
                       <Col xs={24} sm={12} md={8}>
                         <Text strong>Package Price:</Text>
                         <div>
-                          {Number(blindbox.packagePrice).toLocaleString()} ₫
+                          {Number(blindbox.packagePrice || 0).toLocaleString()} ₫
                         </div>
                       </Col>
                       <Col xs={24} sm={12} md={8}>
                         <Text strong>Available Box Units:</Text>
-                        <div>{blindbox.availableBoxUnits}</div>
+                        <div>{blindbox.availableBoxUnits || 0}</div>
                       </Col>
                       <Col xs={24} sm={12} md={8}>
                         <Text strong>Available Package Units:</Text>
-                        <div>{blindbox.availablePackageUnits}</div>
+                        <div>{blindbox.availablePackageUnits || 0}</div>
                       </Col>
                       {blindbox.activeCampaign && (
                         <>
@@ -1046,7 +1052,7 @@ const BlindboxDetailPage = () => {
                         <Col span={24}>
                           <Card className="campaign-progress-card">
                             <Title level={5} className="text-center mb-4">
-                              {blindbox.activeCampaign.currentUnitsCount}{" "}
+                              {blindbox.activeCampaign.currentUnitsCount || 0}{" "}
                               {blindbox.activeCampaign.campaignType === "GROUP"
                                 ? "Preorders"
                                 : "Units Sold"}
@@ -1164,7 +1170,7 @@ const BlindboxDetailPage = () => {
                         Related Blind Box Series {i + 1}
                       </div>
                       <div className="text-sm font-semibold">
-                        {(blindbox.boxPrice * 0.9).toLocaleString()} ₫
+                        {((blindbox.boxPrice || 0) * 0.9).toLocaleString()} ₫
                       </div>
                     </Card>
                   </Col>
