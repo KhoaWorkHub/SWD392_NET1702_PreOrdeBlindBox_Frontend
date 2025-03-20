@@ -22,7 +22,8 @@ import {
   DeleteOutlined, 
   EyeOutlined, 
   ReloadOutlined,
-  ExclamationCircleOutlined
+  ExclamationCircleOutlined,
+  CalendarOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import useAuth from '../../../hooks/useAuth';
@@ -149,6 +150,11 @@ const BlindboxList = () => {
     navigate('/dashboard/blindboxes/create');
   };
 
+  // Navigate to series campaigns
+  const viewSeriesCampaigns = (id) => {
+    navigate(`/dashboard/campaigns/series/${id}`);
+  };
+
   // Table columns configuration
   const columns = [
     {
@@ -257,12 +263,23 @@ const BlindboxList = () => {
             />
           </Tooltip>
           
+          {/* New Campaign Button */}
+          <Tooltip title="View Campaigns">
+            <Button 
+              type="primary" 
+              size="small"
+              icon={<CalendarOutlined />}
+              onClick={() => viewSeriesCampaigns(record.id)}
+            >
+              Campaigns
+            </Button>
+          </Tooltip>
+          
           <Tooltip title="Edit">
             <Button 
               type="text" 
               icon={<EditOutlined />} 
               onClick={() => navigateToEdit(record.id)}
-              disabled={!isAdmin}
             />
           </Tooltip>
           
@@ -272,7 +289,6 @@ const BlindboxList = () => {
               danger
               icon={<DeleteOutlined />} 
               onClick={() => confirmDelete(record.id)}
-              disabled={!isAdmin}
             />
           </Tooltip>
         </Space>
@@ -286,16 +302,14 @@ const BlindboxList = () => {
         <div className="flex justify-between items-center mb-6">
           <Title level={2} className="mb-0">Blindbox Series</Title>
           
-          {isAdmin && (
-            <Button 
-              type="primary" 
-              icon={<PlusOutlined />}
-              onClick={navigateToCreate}
-              className="bg-black hover:bg-gray-800"
-            >
-              Create New Series
-            </Button>
-          )}
+          <Button 
+            type="primary" 
+            icon={<PlusOutlined />}
+            onClick={navigateToCreate}
+            className="bg-black hover:bg-gray-800"
+          >
+            Create New Series
+          </Button>
         </div>
         
         {/* Search and filter section */}
@@ -386,19 +400,28 @@ const BlindboxList = () => {
           <Button key="close" onClick={() => setDetailsVisible(false)}>
             Close
           </Button>,
-          isAdmin && (
-            <Button 
-              key="edit" 
-              type="primary" 
-              onClick={() => {
-                setDetailsVisible(false);
-                navigateToEdit(selectedSeries.id);
-              }}
-              className="bg-black hover:bg-gray-800"
-            >
-              Edit
-            </Button>
-          )
+          <Button 
+            key="campaigns" 
+            type="primary"
+            onClick={() => {
+              setDetailsVisible(false);
+              viewSeriesCampaigns(selectedSeries.id);
+            }}
+            icon={<CalendarOutlined />}
+          >
+            View Campaigns
+          </Button>,
+          <Button 
+            key="edit" 
+            type="primary" 
+            onClick={() => {
+              setDetailsVisible(false);
+              navigateToEdit(selectedSeries.id);
+            }}
+            className="bg-black hover:bg-gray-800"
+          >
+            Edit
+          </Button>
         ]}
         width={800}
       >
