@@ -12,7 +12,8 @@ import {
   BellOutlined,
   AppstoreOutlined,
   FileTextOutlined,
-  GiftOutlined
+  GiftOutlined,
+  CalendarOutlined
 } from '@ant-design/icons';
 import { Link, useNavigate, useLocation, Outlet } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
@@ -56,8 +57,8 @@ const DashboardLayout = () => {
     navigate('/login');
   };
 
-  // Admin menu items
-  const adminMenuItems = [
+  // Common menu items for both admin and staff
+  const commonMenuItems = [
     {
       key: '/dashboard',
       icon: <DashboardOutlined />,
@@ -75,11 +76,27 @@ const DashboardLayout = () => {
       children: [
         {
           key: '/dashboard/blindboxes/list',
-          label: <Link to="/dashboard/blindboxes/list">All Blindboxes</Link>,
+          label: <Link to="/dashboard/blindboxes/list">Blindbox Series</Link>,
         },
         {
           key: '/dashboard/blindboxes/create',
           label: <Link to="/dashboard/blindboxes/create">Create New</Link>,
+        },
+      ],
+    },
+    // Add Campaign Management menu
+    {
+      key: '/dashboard/campaigns',
+      icon: <CalendarOutlined />,
+      label: 'Campaign Management',
+      children: [
+        {
+          key: '/dashboard/campaigns',
+          label: <Link to="/dashboard/campaigns">All Campaigns</Link>,
+        },
+        {
+          key: '/dashboard/campaigns/create',
+          label: <Link to="/dashboard/campaigns/create">Create Campaign</Link>,
         },
       ],
     },
@@ -102,36 +119,6 @@ const DashboardLayout = () => {
       key: '/dashboard/settings',
       icon: <SettingOutlined />,
       label: <Link to="/dashboard/settings">Settings</Link>,
-    },
-  ];
-
-  // Staff menu items (subset of admin items)
-  const staffMenuItems = [
-    {
-      key: '/dashboard',
-      icon: <DashboardOutlined />,
-      label: <Link to="/dashboard">Dashboard</Link>,
-    },
-    {
-      key: '/dashboard/blindboxes',
-      icon: <GiftOutlined />,
-      label: 'Blindbox Management',
-      children: [
-        {
-          key: '/dashboard/blindboxes/list',
-          label: <Link to="/dashboard/blindboxes/list">All Blindboxes</Link>,
-        },
-      ],
-    },
-    {
-      key: '/dashboard/orders',
-      icon: <ShoppingOutlined />,
-      label: <Link to="/dashboard/orders">Orders</Link>,
-    },
-    {
-      key: '/dashboard/preorders',
-      icon: <AppstoreOutlined />,
-      label: <Link to="/dashboard/preorders">Preorders</Link>,
     },
   ];
 
@@ -160,8 +147,8 @@ const DashboardLayout = () => {
     },
   ];
 
-  // Determine which menu to show based on role
-  const menuItems = user && user.includes('ADMIN') ? adminMenuItems : staffMenuItems;
+  // Use the common menu items for both admin and staff
+  const menuItems = commonMenuItems;
   
   // Find the current selected key based on path
   const selectedKeys = [location.pathname];

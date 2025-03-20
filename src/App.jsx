@@ -28,6 +28,9 @@ import { NotFoundPage } from "./components/ErrorPage/ErrorPage.jsx";
 import BlindboxEdit from "./components/Dashboard/BlindboxEdit/BlindboxEdit.jsx";
 import BlindboxCreate from "./components/Dashboard/BlindboxCreate/BlindboxCreate.jsx";
 import BlindboxList from "./components/Dashboard/BlindboxList/BlindboxList.jsx";
+import CampaignList from "./components/Dashboard/CampaignManagement/CampaignList.jsx";
+import CampaignDetails from "./components/Dashboard/CampaignManagement/CampaignDetails.jsx";
+import CampaignCreate from "./components/Dashboard/CampaignManagement/CampaignCreate.jsx";
 
 // Create a separate component for the routes
 const AppRoutes = () => {
@@ -66,12 +69,12 @@ const AppRoutes = () => {
             }
           />
 
-          {/* Admin-only routes */}
+          {/* User Management Routes - accessible to both ADMIN and STAFF */}
           <Route
             path="user-management"
             element={
               <ProtectedRoute
-                allowedRoles={["ADMIN"]}
+                allowedRoles={["ADMIN", "STAFF"]}
                 redirectPath="/dashboard"
               />
             }
@@ -79,52 +82,25 @@ const AppRoutes = () => {
             <Route index element={<UserManagement />} />
           </Route>
 
-          {/* Blindbox Management Routes */}
+          {/* Blindbox Management Routes - accessible to both ADMIN and STAFF */}
           <Route path="blindboxes">
             <Route path="list" element={<BlindboxList />} />
+            <Route path="create" element={<BlindboxCreate />} />
+            <Route path="edit/:id" element={<BlindboxEdit />} />
+          </Route>
 
-            {/* Fix for create route */}
-            <Route
-              path="create"
-              element={
-                <ProtectedRoute
-                  allowedRoles={["ADMIN"]}
-                  redirectPath="/dashboard/blindboxes/list"
-                />
-              }
-            >
-              <Route index element={<BlindboxCreate />} />
-            </Route>
-
-            {/* Fix for edit route */}
-            <Route
-              path="edit/:id"
-              element={
-                <ProtectedRoute
-                  allowedRoles={["ADMIN"]}
-                  redirectPath="/dashboard/blindboxes/list"
-                />
-              }
-            >
-              <Route index element={<BlindboxEdit />} />
-            </Route>
+          {/* Campaign Management Routes - accessible to both ADMIN and STAFF */}
+          <Route path="campaigns">
+            <Route path="series/:seriesId" element={<CampaignList />} />
+            <Route path="create" element={<CampaignCreate />} />
+            <Route path=":campaignId" element={<CampaignDetails />} />
           </Route>
 
           <Route path="orders" element={<div>Orders Management</div>} />
           <Route path="preorders" element={<div>Preorders Management</div>} />
 
-          {/* Admin-only routes */}
-          <Route
-            path="reports"
-            element={
-              <ProtectedRoute
-                allowedRoles={["ADMIN"]}
-                redirectPath="/dashboard"
-              />
-            }
-          >
-            <Route index element={<div>Reports</div>} />
-          </Route>
+          {/* Reports - accessible to both ADMIN and STAFF */}
+          <Route path="reports" element={<div>Reports</div>} />
 
           <Route path="settings" element={<div>Settings</div>} />
         </Route>

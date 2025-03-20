@@ -6,7 +6,10 @@ import {
   GiftOutlined,
   ClockCircleOutlined,
   CheckCircleOutlined,
-  RightOutlined
+  RightOutlined,
+  FileSearchOutlined,
+  CalendarOutlined,
+  PlusOutlined
 } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 
@@ -24,10 +27,12 @@ const StaffDashboard = () => {
     pendingOrders: 0,
     shippedOrders: 0,
     totalPreorders: 0,
-    pendingPreorders: 0
+    pendingPreorders: 0,
+    activeCampaigns: 0
   });
   const [recentOrders, setRecentOrders] = useState([]);
   const [activities, setActivities] = useState([]);
+  const [recentCampaigns, setRecentCampaigns] = useState([]);
   
   // Fetch dashboard data
   useEffect(() => {
@@ -43,7 +48,8 @@ const StaffDashboard = () => {
             pendingOrders: 24,
             shippedOrders: 156,
             totalPreorders: 243,
-            pendingPreorders: 47
+            pendingPreorders: 47,
+            activeCampaigns: 5
           });
           
           // Mock recent orders
@@ -129,6 +135,37 @@ const StaffDashboard = () => {
             }
           ]);
           
+          // Mock recent campaigns
+          setRecentCampaigns([
+            {
+              id: 101,
+              seriesName: 'Mystery Dolls 2025',
+              campaignType: 'GROUP',
+              startDate: '2025-03-01T00:00:00',
+              endDate: '2025-04-15T23:59:59',
+              status: 'ACTIVE',
+              currentUnits: 156
+            },
+            {
+              id: 102,
+              seriesName: 'Summer Collection',
+              campaignType: 'MILESTONE',
+              startDate: '2025-03-10T00:00:00',
+              endDate: '2025-05-10T23:59:59',
+              status: 'ACTIVE',
+              currentUnits: 89
+            },
+            {
+              id: 103,
+              seriesName: 'Spring Edition',
+              campaignType: 'GROUP',
+              startDate: '2025-02-15T00:00:00',
+              endDate: '2025-03-31T23:59:59',
+              status: 'ENDING_SOON',
+              currentUnits: 213
+            }
+          ]);
+          
           setLoading(false);
         }, 1000);
         
@@ -190,6 +227,56 @@ const StaffDashboard = () => {
     },
   ];
 
+  // Campaign table columns
+  const campaignColumns = [
+    {
+      title: 'Series',
+      dataIndex: 'seriesName',
+      key: 'seriesName',
+      render: (text, record) => <Link to={`/dashboard/campaigns/${record.id}`}>{text}</Link>,
+    },
+    {
+      title: 'Type',
+      dataIndex: 'campaignType',
+      key: 'campaignType',
+      render: (type) => (
+        <Tag color={type === 'GROUP' ? 'orange' : 'green'}>{type}</Tag>
+      ),
+    },
+    {
+      title: 'Status',
+      dataIndex: 'status',
+      key: 'status',
+      render: (status) => {
+        let color = 'default';
+        if (status === 'ACTIVE') color = 'green';
+        else if (status === 'ENDING_SOON') color = 'orange';
+        else if (status === 'ENDED') color = 'red';
+        return <Tag color={color}>{status}</Tag>;
+      },
+    },
+    {
+      title: 'End Date',
+      dataIndex: 'endDate',
+      key: 'endDate',
+      render: (date) => new Date(date).toLocaleDateString(),
+    },
+    {
+      title: 'Units',
+      dataIndex: 'currentUnits',
+      key: 'currentUnits',
+    },
+    {
+      title: 'Action',
+      key: 'action',
+      render: (_, record) => (
+        <Button size="small" type="primary">
+          Manage
+        </Button>
+      ),
+    },
+  ];
+
   return (
     <div className="staff-dashboard">
       <div className="dashboard-header-section">
@@ -206,7 +293,7 @@ const StaffDashboard = () => {
       
       {/* Statistics Cards */}
       <Row gutter={[16, 16]} className="mt-6">
-        <Col xs={24} sm={12} md={6}>
+        <Col xs={24} sm={12} md={8} lg={4}>
           <Card hoverable className="dashboard-stat-card">
             <div className="dashboard-stat-icon" style={{ color: '#faad14' }}>
               <ClockCircleOutlined />
@@ -214,12 +301,12 @@ const StaffDashboard = () => {
             <Statistic title="Pending Orders" value={stats.pendingOrders} loading={loading} />
             <div className="mt-3">
               <Text type="secondary">
-                Requires immediate attention
+                Requires attention
               </Text>
             </div>
           </Card>
         </Col>
-        <Col xs={24} sm={12} md={6}>
+        <Col xs={24} sm={12} md={8} lg={4}>
           <Card hoverable className="dashboard-stat-card">
             <div className="dashboard-stat-icon" style={{ color: '#52c41a' }}>
               <ShoppingOutlined />
@@ -232,7 +319,7 @@ const StaffDashboard = () => {
             </div>
           </Card>
         </Col>
-        <Col xs={24} sm={12} md={6}>
+        <Col xs={24} sm={12} md={8} lg={4}>
           <Card hoverable className="dashboard-stat-card">
             <div className="dashboard-stat-icon" style={{ color: '#1890ff' }}>
               <AppstoreOutlined />
@@ -245,7 +332,7 @@ const StaffDashboard = () => {
             </div>
           </Card>
         </Col>
-        <Col xs={24} sm={12} md={6}>
+        <Col xs={24} sm={12} md={8} lg={4}>
           <Card hoverable className="dashboard-stat-card">
             <div className="dashboard-stat-icon" style={{ color: '#f5222d' }}>
               <GiftOutlined />
@@ -258,7 +345,56 @@ const StaffDashboard = () => {
             </div>
           </Card>
         </Col>
+        <Col xs={24} sm={12} md={8} lg={4}>
+          <Card hoverable className="dashboard-stat-card">
+            <div className="dashboard-stat-icon" style={{ color: '#722ed1' }}>
+              <CalendarOutlined />
+            </div>
+            <Statistic title="Active Campaigns" value={stats.activeCampaigns} loading={loading} />
+            <div className="mt-3">
+              <Text type="secondary">
+                Currently running
+              </Text>
+            </div>
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} md={8} lg={4}>
+          <Card hoverable className="dashboard-stat-card">
+            <div className="dashboard-stat-icon" style={{ color: '#13c2c2' }}>
+              <FileSearchOutlined />
+            </div>
+            <Statistic title="Reports" value="View" loading={loading} />
+            <div className="mt-3">
+              <Link to="/dashboard/reports">
+                <Text type="secondary" className="hover:text-blue-500">
+                  Access reports
+                </Text>
+              </Link>
+            </div>
+          </Card>
+        </Col>
       </Row>
+      
+      {/* Active Campaigns */}
+      <Card 
+        title="Active Campaigns" 
+        className="mt-6"
+        extra={
+          <Link to="/dashboard/blindboxes/list">
+            <Button type="link" icon={<RightOutlined />}>
+              View All Campaigns
+            </Button>
+          </Link>
+        }
+      >
+        <Table 
+          columns={campaignColumns} 
+          dataSource={recentCampaigns}
+          rowKey="id"
+          loading={loading}
+          pagination={false}
+        />
+      </Card>
       
       {/* Recent Orders */}
       <Row gutter={[16, 16]} className="mt-6">
@@ -309,7 +445,7 @@ const StaffDashboard = () => {
         <Col span={24}>
           <Card title="Quick Actions">
             <Row gutter={[16, 16]}>
-              <Col xs={24} sm={12} md={8} lg={6}>
+              <Col xs={24} sm={12} md={6} lg={4}>
                 <Button 
                   type="primary" 
                   icon={<ShoppingOutlined />}
@@ -319,7 +455,7 @@ const StaffDashboard = () => {
                   Process Orders
                 </Button>
               </Col>
-              <Col xs={24} sm={12} md={8} lg={6}>
+              <Col xs={24} sm={12} md={6} lg={4}>
                 <Button 
                   type="default" 
                   icon={<AppstoreOutlined />}
@@ -329,24 +465,44 @@ const StaffDashboard = () => {
                   Manage Preorders
                 </Button>
               </Col>
-              <Col xs={24} sm={12} md={8} lg={6}>
+              <Col xs={24} sm={12} md={6} lg={4}>
                 <Button 
                   type="default" 
                   icon={<GiftOutlined />}
                   block
                   onClick={() => window.location.href = '/dashboard/blindboxes/list'}
                 >
-                  View Blindboxes
+                  Manage Blindboxes
                 </Button>
               </Col>
-              <Col xs={24} sm={12} md={8} lg={6}>
+              <Col xs={24} sm={12} md={6} lg={4}>
                 <Button 
                   type="default" 
-                  icon={<CheckCircleOutlined />}
+                  icon={<CalendarOutlined />}
                   block
-                  onClick={() => window.location.href = '/dashboard/inventory'}
+                  onClick={() => window.location.href = '/dashboard/campaigns/create'}
                 >
-                  Check Inventory
+                  Create Campaign
+                </Button>
+              </Col>
+              <Col xs={24} sm={12} md={6} lg={4}>
+                <Button 
+                  type="default" 
+                  icon={<PlusOutlined />}
+                  block
+                  onClick={() => window.location.href = '/dashboard/blindboxes/create'}
+                >
+                  Create Blindbox
+                </Button>
+              </Col>
+              <Col xs={24} sm={12} md={6} lg={4}>
+                <Button 
+                  type="default" 
+                  icon={<FileSearchOutlined />}
+                  block
+                  onClick={() => window.location.href = '/dashboard/reports'}
+                >
+                  View Reports
                 </Button>
               </Col>
             </Row>

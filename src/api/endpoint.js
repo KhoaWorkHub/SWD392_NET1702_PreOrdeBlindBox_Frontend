@@ -14,15 +14,6 @@ const endpoints = {
     setStaff: (id) => `/users/${id}/set-staff`,
     updateActiveStatus: (id) => `/users/${id}/active-status`
   },
-  blindbox: {
-    getAllSeries: '/blindbox', 
-    getSeriesById: (id) => `/blindbox/${id}`,
-    createSeries: '/blindbox',  
-    updateSeries: (id) => `/blindbox/${id}`,
-    deleteSeries: (id) => `/blindbox/${id}`,
-    uploadItemImages: (itemId) => `/blindbox/items/${itemId}/images`,
-    uploadSeriesImages: (seriesId) => `/blindbox/${seriesId}/images`
-  },
   cart: {
     getCart: '/cart',
     addToCart: '/cart',
@@ -39,7 +30,22 @@ const endpoints = {
   preorders: {
     getHistory: '/preorders',
     getDetails: (id) => `/preorders/${id}`
-  }
+  },
+  campaign: {
+    create: '/campaigns',
+    getSeriesCampaigns: (seriesId) => `/campaigns/series/${seriesId}`,
+    getCampaignDetails: (campaignId) => `/campaigns/${campaignId}`,
+    endCampaign: (campaignId) => `/campaigns/${campaignId}/end`
+  },
+  blindbox: {
+    getAllSeries: '/blindbox', 
+    getSeriesById: (id) => `/blindbox/${id}`,
+    createSeries: '/blindbox',  
+    updateSeries: (id) => `/blindbox/${id}`,
+    deleteSeries: (id) => `/blindbox/${id}`,
+    uploadItemImages: (itemId) => `/blindbox/items/${itemId}/images`,
+    uploadSeriesImages: (seriesId) => `/blindbox/${seriesId}/images`
+  },
 };
   
 export default endpoints;
