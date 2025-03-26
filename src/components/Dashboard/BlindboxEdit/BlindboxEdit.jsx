@@ -32,10 +32,12 @@ import {
   DeleteOutlined,
   EditOutlined,
   EyeOutlined,
-  LoadingOutlined
+  LoadingOutlined,
+  CheckCircleOutlined
 } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import useBlindboxManagement from '../../../hooks/useBlindboxManagement';
+import axiosInstance from '../../../api/axios';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -58,11 +60,16 @@ const BlindboxEdit = () => {
     getBlindboxSeriesById,
     updateBlindboxSeries,
     uploadBlindboxSeriesImages,
-    uploadBlindboxItemImages,
+    uploadBlindboxItemImage, // Ensure this is provided by the hook
     loading,
     selectedSeries,
     setSelectedSeries
   } = useBlindboxManagement();
+  
+  // Early check if uploadBlindboxItemImage is correctly received from the hook
+  useEffect(() => {
+    console.log("uploadBlindboxItemImage function available:", typeof uploadBlindboxItemImage === 'function');
+  }, [uploadBlindboxItemImage]);
   
   const [activeTab, setActiveTab] = useState('1');
   const [fileList, setFileList] = useState([]);
@@ -116,71 +123,120 @@ const BlindboxEdit = () => {
     }
   }, [id, getBlindboxSeriesById, form]);
 
-  // Handle form submission
-  const handleSubmit = async (values) => {
-    setSubmitting(true);
-    setError(null);
+// Handle form submission
+const handleSubmit = async (values) => {
+  setSubmitting(true);
+  setError(null);
+  
+  try {
+    // Prepare data for submission
+    const blindboxData = {
+      seriesName: values.seriesName,
+      description: values.description,
+      boxPrice: values.boxPrice,
+      packagePrice: values.packagePrice,
+      availableBoxUnits: values.availableBoxUnits,
+      availablePackageUnits: values.availablePackageUnits,
+      numberOfBlindboxesPerPackage: values.numberOfBlindboxesPerPackage || 6,
+      active: values.active
+    };
     
-    try {
-      // Prepare data for submission
-      const blindboxData = {
-        seriesName: values.seriesName,
-        description: values.description,
-        boxPrice: values.boxPrice,
-        packagePrice: values.packagePrice,
-        availableBoxUnits: values.availableBoxUnits,
-        availablePackageUnits: values.availablePackageUnits,
-        numberOfBlindboxesPerPackage: values.numberOfBlindboxesPerPackage || 6,
-        active: values.active
-      };
+    console.log('Updating blindbox data:', blindboxData);
+    
+    // FIXED: Use the correct function to update blindbox data
+    const success = await updateBlindboxSeries(id, blindboxData);
+    
+    if (success) {
+      message.success('Blindbox series updated successfully');
       
-      console.log('Updating blindbox data:', blindboxData);
-      
-      // Call API to update blindbox series
-      const success = await updateBlindboxSeries(id, blindboxData);
-      
-      if (success) {
-        message.success('Blindbox series updated successfully');
+      // Now handle image uploads separately
+      if (fileList.length > 0) {
+        console.log('Processing file uploads for series');
         
-        // Also upload series images if any
-        if (fileList.length > 0) {
-          const imageFiles = fileList.map(file => file.originFileObj).filter(Boolean);
-          if (imageFiles.length > 0) {
-            await uploadSeriesImages(imageFiles);
-          }
+        // Extract the actual File objects from the fileList
+        const imageFiles = fileList.map(file => {
+          // Make sure we're getting the actual File object
+          const fileObj = file.originFileObj || file;
+          console.log('File object type:', typeof fileObj, fileObj instanceof File);
+          return fileObj;
+        }).filter(file => file instanceof File); // Only include valid File objects
+        
+        console.log(`Found ${imageFiles.length} valid files to upload`);
+        
+        if (imageFiles.length > 0) {
+          await uploadSeriesImages(imageFiles);
+        } else {
+          console.warn('No valid files found in fileList:', fileList);
         }
       } else {
-        throw new Error('Failed to update blindbox series');
+        console.log('No files to upload for this series update');
       }
-    } catch (err) {
-      console.error('Error updating blindbox series:', err);
-      setError(err.message || 'Failed to update blindbox series');
-      message.error(err.message || 'Failed to update blindbox series');
-    } finally {
-      setSubmitting(false);
+    } else {
+      throw new Error('Failed to update blindbox series');
     }
-  };
+  } catch (err) {
+    console.error('Error updating blindbox series:', err);
+    setError(err.message || 'Failed to update blindbox series');
+    message.error(err.message || 'Failed to update blindbox series');
+  } finally {
+    setSubmitting(false);
+  }
+};
 
-  // Handle upload of blindbox series images
-  const uploadSeriesImages = async (files) => {
-    try {
-      const success = await uploadBlindboxSeriesImages(id, files);
-      if (success) {
-        message.success('Series images uploaded successfully');
-        setFileList([]);
-        // Refresh blindbox series data
-        await getBlindboxSeriesById(id);
-      } else {
-        throw new Error('Failed to upload series images');
+// Fixed upload function to correctly handle the files
+const uploadSeriesImages = async (files) => {
+  try {
+    console.log('Starting upload of series images:', files);
+    
+    // Create a FormData instance
+    const formData = new FormData();
+    
+    // Add each file to the formData with key 'files' to match @RequestPart List<MultipartFile> files
+    files.forEach(file => {
+      formData.append('files', file);
+    });
+    
+    // Log what we're sending for debugging
+    console.log(`Sending ${files.length} files to API endpoint for series ID: ${id}`);
+    for (const entry of formData.entries()) {
+      console.log(`FormData entry: ${entry[0]} - ${entry[1] instanceof File ? entry[1].name : entry[1]}`);
+    }
+    
+    // Make direct API call to ensure correct formatting
+    const response = await axiosInstance.put(
+      `/api/v1/blindbox/asset/${id}`, // Direct URL to endpoint
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       }
-    } catch (err) {
-      console.error('Error uploading series images:', err);
-      message.error(err.message || 'Failed to upload series images');
+    );
+    
+    console.log('Upload response:', response);
+    
+    if (response.data && response.data.status === true) {
+      message.success('Series images uploaded successfully');
+      setFileList([]);
+      // Refresh blindbox series data
+      await getBlindboxSeriesById(id);
+      return true;
+    } else {
+      throw new Error(response.data?.message || 'Failed to upload series images');
     }
-  };
+  } catch (err) {
+    console.error('Error uploading series images:', err);
+    message.error(err.message || 'Failed to upload series images');
+    return false;
+  }
+};
 
-  // Handle images upload for blindbox items
+  // Enhanced handleItemImageUpload function with debugging
   const handleItemImageUpload = async () => {
+    console.log("Upload button clicked");
+    console.log("Selected item:", selectedItem);
+    console.log("Image file:", itemImageFile);
+    
     if (!selectedItem) {
       message.error('No item selected for image upload');
       return;
@@ -194,8 +250,17 @@ const BlindboxEdit = () => {
     setUploadingItemImages(true);
     
     try {
-      // Call API to upload image
-      const success = await uploadBlindboxItemImages(selectedItem.id, itemImageFile);
+      console.log("Calling uploadBlindboxItemImage with:", selectedItem.id, itemImageFile);
+      
+      // Check if the function exists in the hook
+      if (typeof uploadBlindboxItemImage !== 'function') {
+        console.error("uploadBlindboxItemImage is not a function:", uploadBlindboxItemImage);
+        throw new Error('Upload function not available');
+      }
+      
+      // Call API to upload image using the method
+      const success = await updateBlindboxSeries(selectedItem.id, itemImageFile);
+      console.log("Upload API response:", success);
       
       if (success) {
         message.success('Image uploaded successfully');
@@ -212,6 +277,31 @@ const BlindboxEdit = () => {
       message.error(err.message || 'Failed to upload image');
     } finally {
       setUploadingItemImages(false);
+    }
+  };
+
+  // Enhanced handleItemImageChange function with better debugging
+  const handleItemImageChange = (info) => {
+    console.log("Image change event:", info);
+    
+    if (info.file.status === 'removed') {
+      console.log("File removed, clearing itemImageFile state");
+      setItemImageFile(null);
+      return;
+    }
+    
+    // Only use the latest file
+    if (info.file.originFileObj) {
+      console.log("Setting itemImageFile to:", info.file.originFileObj);
+      setItemImageFile(info.file.originFileObj);
+    } else {
+      console.log("No originFileObj found in:", info.file);
+      // Try alternative ways to get the file
+      const fileObj = info.file.originFileObj || info.file;
+      if (fileObj instanceof File || fileObj instanceof Blob) {
+        console.log("Using alternative file object:", fileObj);
+        setItemImageFile(fileObj);
+      }
     }
   };
 
@@ -242,19 +332,6 @@ const BlindboxEdit = () => {
     return false; // Prevent automatic upload
   };
 
-  // Handle item image change
-  const handleItemImageChange = (info) => {
-    if (info.file.status === 'removed') {
-      setItemImageFile(null);
-      return;
-    }
-    
-    // Only use the latest file
-    if (info.file.originFileObj) {
-      setItemImageFile(info.file.originFileObj);
-    }
-  };
-
   // Go back to blindbox list
   const goBack = () => {
     navigate('/dashboard/blindboxes/list');
@@ -262,6 +339,7 @@ const BlindboxEdit = () => {
 
   // Open item image upload modal
   const openItemImageUploadModal = (item) => {
+    console.log("Opening image upload modal for item:", item);
     setSelectedItem(item);
     setItemImageFile(null);
     setItemImageModalVisible(true);
@@ -390,16 +468,6 @@ const BlindboxEdit = () => {
       </div>
     );
   }
-
-  // Temporary debug card to show what's happening
-  const debugInfo = {
-    id: id,
-    selectedSeriesExists: !!selectedSeries,
-    formInitialized: form.getFieldsValue(true),
-    loading,
-    initialLoading,
-    error
-  };
 
   return (
     <div className="blindbox-edit-container">
@@ -628,7 +696,7 @@ const BlindboxEdit = () => {
               
               <Form.Item>
                 <Space size="middle">
-                  <Button 
+                  {/* <Button 
                     type="primary" 
                     htmlType="submit" 
                     loading={submitting || loading}
@@ -636,7 +704,7 @@ const BlindboxEdit = () => {
                     className="bg-black hover:bg-gray-800"
                   >
                     Save Changes
-                  </Button>
+                  </Button> */}
                   
                   <Button 
                     onClick={goBack}
@@ -677,7 +745,7 @@ const BlindboxEdit = () => {
         </Tabs>
       </Card>
       
-      {/* Item Image Upload Modal */}
+      {/* Updated Item Image Upload Modal */}
       <Modal
         title={`Upload Image for Item #${selectedItem?.id || ''}`}
         open={itemImageModalVisible}
@@ -690,11 +758,14 @@ const BlindboxEdit = () => {
             key="upload"
             type="primary"
             loading={uploadingItemImages}
-            onClick={handleItemImageUpload}
-            disabled={!itemImageFile}
+            onClick={() => {
+              console.log("Upload button clicked from inline handler");
+              handleItemImageUpload();
+            }}
+            disabled={!itemImageFile} // Comment/uncomment to toggle button state
             className="bg-black hover:bg-gray-800"
           >
-            Upload
+            Upload Image
           </Button>
         ]}
       >
@@ -722,20 +793,56 @@ const BlindboxEdit = () => {
             
             <Divider />
             
+            <Alert 
+              message="Upload a new image" 
+              description="Click or drag an image to this area to upload." 
+              type="info" 
+              showIcon 
+              className="mb-4" 
+            />
+            
             <Upload
               listType="picture-card"
-              beforeUpload={() => false}
+              beforeUpload={(file) => {
+                console.log("Before upload called with file:", file);
+                // Validate file
+                const isImage = file.type.startsWith('image/');
+                if (!isImage) {
+                  message.error('You can only upload image files!');
+                  return Upload.LIST_IGNORE;
+                }
+                
+                const isLt5M = file.size / 1024 / 1024 < 5;
+                if (!isLt5M) {
+                  message.error('Image must be smaller than 5MB!');
+                  return Upload.LIST_IGNORE;
+                }
+                
+                // Directly set the file here as a backup
+                console.log("Setting itemImageFile directly from beforeUpload");
+                setItemImageFile(file);
+                
+                return false; // Prevent automatic upload
+              }}
               onChange={handleItemImageChange}
               maxCount={1}
             >
               <div>
                 <PlusOutlined />
-                <div style={{ marginTop: 8 }}>Upload</div>
+                <div style={{ marginTop: 8 }}>Select File</div>
               </div>
             </Upload>
             
-            <div className="mt-2 text-gray-500 text-xs">
-              Supports JPG, PNG, WEBP. Max size: 5MB per image.
+            <div className="mt-4 flex justify-between items-center">
+              <div className="text-gray-500 text-xs">
+                Supports JPG, PNG, WEBP. Max size: 5MB per image.
+              </div>
+              
+              {itemImageFile && (
+                <div className="text-green-600">
+                  <CheckCircleOutlined /> File selected
+                </div>
+              )}
             </div>
           </>
         )}

@@ -17,7 +17,7 @@ const blindboxService = {
    */
   getAllBlindBoxSeries: async (params = {}) => {
     try {
-      const { seriesName, page = 0, size = 10, sort = 'id,asc' } = params;
+      const { seriesName, page = 0, size = 4, sort = 'id,asc' } = params;
       
       const queryParams = new URLSearchParams();
       
@@ -109,21 +109,19 @@ const blindboxService = {
   },
 
   /**
-   * Upload images for a blindbox item
+   * Upload an image for a blindbox item
    * 
    * @param {number} itemId - Blindbox item ID
-   * @param {Array<File>} files - Image files to upload
+   * @param {File} file - Image file to upload
    * @returns {Promise} - Promise with response data
    */
-  uploadBlindboxItemImages: async (itemId, files) => {
+  uploadBlindboxItemImage: async (itemId, file) => {
     try {
       const formData = new FormData();
-      files.forEach(file => {
-        formData.append('files', file);
-      });
+      formData.append('file', file); // Using 'file' as the parameter name to match backend expectation
 
       const response = await axiosInstance.put(
-        endpoints.blindbox.uploadItemImages(itemId),
+        endpoints.blindbox.uploadItemImage(itemId),
         formData,
         {
           headers: {
@@ -133,13 +131,80 @@ const blindboxService = {
       );
       return response.data;
     } catch (error) {
-      console.error(`Error uploading images for blindbox item ${itemId}:`, error);
+      console.error(`Error uploading image for blindbox item ${itemId}:`, error);
+      
+      // Enhanced error logging
+      if (error.response) {
+        console.error('Server response error:', {
+          status: error.response.status,
+          data: error.response.data
+        });
+      } else if (error.request) {
+        console.error('No response received:', error.request);
+      } else {
+        console.error('Request error:', error.message);
+      }
+      
       throw error.response?.data || {
-        message: 'An error occurred while uploading images'
+        message: 'An error occurred while uploading image'
       };
     }
   },
 
+  /**
+   * Upload images for blindbox series
+   * 
+   * @param {number} seriesId - Blindbox series ID
+   * @param {Array<File>} files - Image files to upload
+   * @returns {Promise} - Promise with response data
+   */
+  uploadBlindboxSeriesImages: async (seriesId, files) => {
+    try {
+      console.log(`Uploading images for series ${seriesId} with ${files.length} files`);
+      
+      const formData = new FormData();
+      // Use 'files' as the parameter name to match backend @RequestPart List<MultipartFile> files
+      files.forEach(file => {
+        formData.append('files', file);
+      });
+
+      // Log form data entries for debugging
+      for (const entry of formData.entries()) {
+        console.log(`FormData entry: ${entry[0]} - ${entry[1] instanceof File ? entry[1].name : entry[1]}`);
+      }
+
+      const response = await axiosInstance.put(
+        endpoints.blindbox.uploadSeriesImages(seriesId),
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+      
+      console.log('Series images upload response:', response);
+      return response.data;
+    } catch (error) {
+      console.error(`Error uploading images for blindbox series ${seriesId}:`, error);
+      
+      // Enhanced error logging
+      if (error.response) {
+        console.error('Server response error:', {
+          status: error.response.status,
+          data: error.response.data
+        });
+      } else if (error.request) {
+        console.error('No response received:', error.request);
+      } else {
+        console.error('Request error:', error.message);
+      }
+      
+      throw error.response?.data || {
+        message: 'An error occurred while uploading series images'
+      };
+    }
+  },
   /**
    * Update an existing blind box series (staff/admin only)
    * 

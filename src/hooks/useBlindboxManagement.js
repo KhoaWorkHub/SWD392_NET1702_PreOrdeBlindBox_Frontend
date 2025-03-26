@@ -22,14 +22,6 @@ const useBlindboxManagement = () => {
 
   /**
    * Fetch all blindbox series with filtering, pagination, and sorting
-   * 
-   * @param {Object} options - Fetch options
-   * @param {number} options.page - Page number (1-based for UI, 0-based for API)
-   * @param {number} options.pageSize - Page size
-   * @param {string} options.seriesName - Filter by series name
-   * @param {string} options.sortField - Field to sort by
-   * @param {string} options.sortDirection - Sort direction (asc/desc)
-   * @returns {Promise<boolean>} - Success status
    */
   const fetchBlindboxSeries = useCallback(async ({
     page = pagination.current,
@@ -79,9 +71,6 @@ const useBlindboxManagement = () => {
 
   /**
    * Get a single blindbox series by ID
-   * 
-   * @param {number} id - Blindbox series ID
-   * @returns {Promise<Object|null>} - Blindbox series data or null
    */
   const getBlindboxSeriesById = useCallback(async (id) => {
     setLoading(true);
@@ -108,9 +97,6 @@ const useBlindboxManagement = () => {
 
   /**
    * Create a new blindbox series
-   * 
-   * @param {FormData} formData - FormData containing request data and images
-   * @returns {Promise<boolean>} - Success status
    */
   const createBlindboxSeries = useCallback(async (formData) => {
     setLoading(true);
@@ -154,10 +140,6 @@ const useBlindboxManagement = () => {
 
   /**
    * Update an existing blindbox series
-   * 
-   * @param {number} id - Blindbox series ID
-   * @param {Object} data - Updated blindbox series data
-   * @returns {Promise<boolean>} - Success status
    */
   const updateBlindboxSeries = useCallback(async (id, data) => {
     setLoading(true);
@@ -189,9 +171,6 @@ const useBlindboxManagement = () => {
 
   /**
    * Delete a blindbox series
-   * 
-   * @param {number} id - Blindbox series ID
-   * @returns {Promise<boolean>} - Success status
    */
   const deleteBlindboxSeries = useCallback(async (id) => {
     setLoading(true);
@@ -223,33 +202,67 @@ const useBlindboxManagement = () => {
   }, [fetchBlindboxSeries, selectedSeries]);
 
   /**
-   * Upload images for a blindbox item
+   * Upload an image for a blindbox item
    * 
    * @param {number} itemId - Blindbox item ID
-   * @param {Array<File>} files - Image files to upload
+   * @param {File} file - Image file to upload
    * @returns {Promise<boolean>} - Success status
    */
-  const uploadBlindboxItemImages = useCallback(async (itemId, files) => {
+  const uploadBlindboxItemImage = useCallback(async (itemId, file) => {
     setLoading(true);
     setError(null);
     
     try {
-      const response = await blindboxService.uploadBlindboxItemImages(itemId, files);
+      const response = await blindboxService.uploadBlindboxItemImage(itemId, file);
       
       if (response && response.status === true) {
-        message.success('Item images uploaded successfully');
+        message.success('Item image uploaded successfully');
         // Refresh the selected series if needed
         if (selectedSeries) {
           await getBlindboxSeriesById(selectedSeries.id);
         }
         return true;
       } else {
-        throw new Error(response?.message || 'Failed to upload item images');
+        throw new Error(response?.message || 'Failed to upload item image');
       }
     } catch (error) {
-      console.error(`Error uploading images for blindbox item ${itemId}:`, error);
-      setError(error.message || 'Failed to upload item images');
-      message.error(error.message || 'Failed to upload item images');
+      console.error(`Error uploading image for blindbox item ${itemId}:`, error);
+      setError(error.message || 'Failed to upload item image');
+      message.error(error.message || 'Failed to upload item image');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [getBlindboxSeriesById, selectedSeries]);
+
+  /**
+   * Upload images for blindbox series
+   * 
+   * @param {number} seriesId - Blindbox series ID
+   * @param {Array<File>} files - Image files to upload
+   * @returns {Promise<boolean>} - Success status
+   */
+  const uploadBlindboxSeriesImages = useCallback(async (seriesId, files) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await blindboxService.uploadBlindboxSeriesImages(seriesId, files);
+      
+      if (response && response.status === true) {
+        message.success('Series images uploaded successfully');
+        // Refresh the selected series if needed
+        if (selectedSeries && selectedSeries.id === seriesId) {
+          await getBlindboxSeriesById(seriesId);
+        }
+        return true;
+      } else {
+        throw new Error(response?.message || 'Failed to upload series images');
+      }
+    } catch (error) {
+      console.error(`Error uploading images for blindbox series ${seriesId}:`, error);
+      setError(error.message || 'Failed to upload series images');
+      message.error(error.message || 'Failed to upload series images');
       return false;
     } finally {
       setLoading(false);
@@ -267,7 +280,8 @@ const useBlindboxManagement = () => {
     createBlindboxSeries,
     updateBlindboxSeries,
     deleteBlindboxSeries,
-    uploadBlindboxItemImages,
+    uploadBlindboxItemImage,
+    uploadBlindboxSeriesImages,
     setSelectedSeries
   };
 };

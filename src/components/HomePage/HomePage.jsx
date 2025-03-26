@@ -81,8 +81,7 @@ export const HomePage = () => {
         <div className="bg-gray-50 p-4 flex items-center justify-center h-64">
           <img
             src={
-              blindbox.seriesImageUrls?.[0] ||
-              `https://placehold.co/300x300?text=${blindbox.seriesName}`
+              blindbox.seriesImageUrl
             }
             alt={blindbox.seriesName}
             className="h-full object-contain"
@@ -195,11 +194,10 @@ export const HomePage = () => {
                         <div className="relative">
                           <img
                             src={
-                              blindbox.seriesImageUrls?.[0] ||
-                              `https://placehold.co/400x400?text=${blindbox.seriesName}`
+                              blindbox.seriesImageUrl
                             }
                             alt={blindbox.seriesName}
-                            className="h-80 md:h-96 object-contain z-10 relative"
+                            className="h-80 md:h-96 object-contain z-10 relative p-8"
                           />
                           <div className="absolute inset-0 bg-white opacity-20 rounded-full blur-3xl -z-0"></div>
                         </div>
@@ -357,8 +355,7 @@ export const HomePage = () => {
                     <div className="h-40 flex items-center justify-center mb-3">
                       <img
                         src={
-                          blindbox.seriesImageUrls?.[0] ||
-                          `https://placehold.co/200x200?text=${blindbox.seriesName}`
+                          blindbox.seriesImageUrl
                         }
                         alt={blindbox.seriesName}
                         className="h-full object-contain"
