@@ -249,7 +249,7 @@ const BlindboxPage = () => {
                     <div className="p-4 bg-gray-50 h-64 flex items-center justify-center">
                       <img 
                         alt={blindbox.seriesName} 
-                        src={blindbox.thumbnailUrl || "https://placehold.co/300x300"}
+                        src={blindbox.seriesImageUrl || "https://placehold.co/300x300"}
                         className="h-full object-contain"
                       />
                     </div>
@@ -259,9 +259,6 @@ const BlindboxPage = () => {
                   className="shadow-sm hover:shadow-md transition-shadow h-full"
                   onClick={() => handleViewDetails(blindbox.id)}
                 >
-                  <div className="text-xs text-gray-500 mb-1">
-                    {new Date(blindbox.releaseDate).toLocaleDateString()}
-                  </div>
                   <div className="text-sm font-medium mb-2 line-clamp-2 h-10">
                     {blindbox.seriesName}
                   </div>

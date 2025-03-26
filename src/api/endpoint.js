@@ -43,8 +43,8 @@ const endpoints = {
     createSeries: '/blindbox',  
     updateSeries: (id) => `/blindbox/${id}`,
     deleteSeries: (id) => `/blindbox/${id}`,
-    uploadItemImages: (itemId) => `/blindbox/items/${itemId}/images`,
-    uploadSeriesImages: (seriesId) => `/blindbox/${seriesId}/images`
+    uploadItemImage: (itemId) => `/blindbox/items/${itemId}`,
+    uploadSeriesImages: (seriesId) => `/blindbox/asset/${seriesId}`
   },
 };
   

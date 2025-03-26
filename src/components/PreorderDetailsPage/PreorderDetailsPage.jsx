@@ -44,6 +44,7 @@ import {
 import useAuth from "../../hooks/useAuth";
 import preorderService from "../../api/services/preorderService";
 import dayjs from "dayjs";
+import Question from "../../assets/question-icon.png";
 import "./PreorderPage.css";
 
 const { Title, Text, Paragraph } = Typography;
@@ -159,11 +160,7 @@ const PreorderDetailsPage = () => {
           </Tag>
         );
       default:
-        return (
-          <Tag color="default">
-            {status || "Unknown"}
-          </Tag>
-        );
+        return <Tag color="default">{status || "Unknown"}</Tag>;
     }
   };
 
@@ -180,21 +177,26 @@ const PreorderDetailsPage = () => {
       dataIndex: "product",
       key: "product",
       render: (_, record) => (
-        <div className="flex items-center">
-          <Image
-            src={record.blindboxSeries.seriesImageUrls?.[0] || "https://placehold.co/80x80?text=No+Image"}
-            alt={record.blindboxSeries.seriesName}
-            width={60}
-            height={60}
-            preview={false}
-            fallback="https://placehold.co/80x80?text=No+Image"
-            className="mr-4"
-          />
-          <div>
-            <Link to={`/blindbox/${record.blindboxSeries.id}`} className="font-medium hover:underline">
+        <div className="flex items-center space-x-6">
+          <div className="flex-shrink-0">
+            <Image
+              src={record.blindboxSeries.seriesImageUrl}
+              alt={record.blindboxSeries.seriesName}
+              width={60}
+              height={60}
+              preview={false}
+              fallback="https://placehold.co/80x80?text=No+Image"
+              className="rounded-md"
+            />
+          </div>
+          <div className="flex flex-col">
+            <Link
+              to={`/blindbox/${record.blindboxSeries.id}`}
+              className="font-medium hover:underline mb-2"
+            >
               {record.blindboxSeries.seriesName}
             </Link>
-            <div className="mt-1">
+            <div>
               <Tag color={record.productType === "PACKAGE" ? "purple" : "blue"}>
                 {record.productType === "PACKAGE" ? "Package" : "Single Box"}
               </Tag>
@@ -215,9 +217,7 @@ const PreorderDetailsPage = () => {
       title: "Locked Price",
       dataIndex: "lockedPrice",
       key: "lockedPrice",
-      render: (price) => (
-        <Text strong>{Number(price).toLocaleString()} ₫</Text>
-      ),
+      render: (price) => <Text strong>{Number(price).toLocaleString()} ₫</Text>,
     },
     {
       title: "Quantity",
@@ -244,20 +244,28 @@ const PreorderDetailsPage = () => {
       dataIndex: "product",
       key: "product",
       render: (_, record) => (
-        <div className="flex items-center">
-          <Image
-            src={record.revealedItem?.imageUrls?.[0] || "https://placehold.co/80x80?text=No+Image"}
-            alt={record.revealedItem?.itemName || record.alias}
-            width={50}
-            height={50}
-            preview={false}
-            fallback="https://placehold.co/80x80?text=No+Image"
-            className="mr-3"
-          />
-          <div>
-            <Text strong>{record.revealedItem?.itemName || "Mystery Item"}</Text>
-            <div className="mt-1">
-              <Text type="secondary">{record.alias || `Product #${record.id}`}</Text>
+        <div className="flex items-center space-x-6">
+          <div className="flex-shrink-0">
+            <Image
+              src={
+                Question
+              }
+              alt={record.revealedItem?.itemName || record.alias}
+              width={50}
+              height={50}
+              preview={false}
+              fallback="https://placehold.co/80x80?text=No+Image"
+              className="mr-3"
+            />
+            <div className="flex flex-col">
+              <Text strong>
+                {record.revealedItem?.itemName || "Mystery Item"}
+              </Text>
+              <div className="mt-1">
+                <Text type="secondary">
+                  {record.alias || `Product #${record.id}`}
+                </Text>
+              </div>
             </div>
           </div>
         </div>
@@ -270,8 +278,8 @@ const PreorderDetailsPage = () => {
     //   render: (_, record) => (
     //     record.revealedItem?.itemChance ? (
     //       <Tag color={
-    //         record.revealedItem.itemChance <= 5 ? "red" : 
-    //         record.revealedItem.itemChance <= 15 ? "orange" : 
+    //         record.revealedItem.itemChance <= 5 ? "red" :
+    //         record.revealedItem.itemChance <= 15 ? "orange" :
     //         record.revealedItem.itemChance <= 25 ? "blue" : "green"
     //       }>
     //         {record.revealedItem.itemChance}% chance
@@ -426,7 +434,8 @@ const PreorderDetailsPage = () => {
               <div>
                 <Title level={4}>Preorder Not Found</Title>
                 <Text type="secondary">
-                  The preorder you are looking for does not exist or you don't have permission to view it.
+                  The preorder you are looking for does not exist or you don't
+                  have permission to view it.
                 </Text>
               </div>
             }
@@ -445,11 +454,13 @@ const PreorderDetailsPage = () => {
   }
 
   // Calculate payment progress
-  const totalPayable = preorderDetails.totalAmount || preorderDetails.estimatedTotalAmount;
+  const totalPayable =
+    preorderDetails.totalAmount || preorderDetails.estimatedTotalAmount;
   const totalPaid = preorderDetails.payments
-    .filter(payment => payment.status === "COMPLETED")
+    .filter((payment) => payment.status === "COMPLETED")
     .reduce((sum, payment) => sum + payment.amount, 0);
-  const paymentProgress = totalPayable > 0 ? Math.min(100, (totalPaid / totalPayable) * 100) : 0;
+  const paymentProgress =
+    totalPayable > 0 ? Math.min(100, (totalPaid / totalPayable) * 100) : 0;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -502,7 +513,11 @@ const PreorderDetailsPage = () => {
             {
               title: "Completed",
               icon: <CheckCircleOutlined />,
-              status: preorderDetails.preorderStatus === "CANCELLED" || preorderDetails.preorderStatus === "EXPIRED" ? "error" : undefined,
+              status:
+                preorderDetails.preorderStatus === "CANCELLED" ||
+                preorderDetails.preorderStatus === "EXPIRED"
+                  ? "error"
+                  : undefined,
             },
           ]}
         />
@@ -515,8 +530,12 @@ const PreorderDetailsPage = () => {
           <Card className="mb-6">
             <Title level={4}>Preorder Summary</Title>
             <Descriptions bordered column={1} className="mt-4">
-              <Descriptions.Item label="Order Code" span={1}>{preorderDetails.orderCode}</Descriptions.Item>
-              <Descriptions.Item label="Customer">{preorderDetails.username}</Descriptions.Item>
+              <Descriptions.Item label="Order Code" span={1}>
+                {preorderDetails.orderCode}
+              </Descriptions.Item>
+              <Descriptions.Item label="Customer">
+                {preorderDetails.username}
+              </Descriptions.Item>
               <Descriptions.Item label="Phone Number">
                 <PhoneOutlined className="mr-2" />
                 {preorderDetails.phoneNumber}
@@ -528,9 +547,13 @@ const PreorderDetailsPage = () => {
               <Descriptions.Item label="Preorder Status">
                 {renderStatusTag(preorderDetails.preorderStatus)}
               </Descriptions.Item>
-              <Descriptions.Item label="Created On">{formatDate(preorderDetails.createdAt)}</Descriptions.Item>
+              <Descriptions.Item label="Created On">
+                {formatDate(preorderDetails.createdAt)}
+              </Descriptions.Item>
               {preorderDetails.deliveryCode && (
-                <Descriptions.Item label="Delivery Code">{preorderDetails.deliveryCode}</Descriptions.Item>
+                <Descriptions.Item label="Delivery Code">
+                  {preorderDetails.deliveryCode}
+                </Descriptions.Item>
               )}
             </Descriptions>
           </Card>
@@ -540,32 +563,46 @@ const PreorderDetailsPage = () => {
             <Title level={4}>Preorder Items</Title>
             <Table
               columns={itemColumns}
-              dataSource={preorderDetails.items.map((item, index) => ({...item, key: index}))}
+              dataSource={preorderDetails.items.map((item, index) => ({
+                ...item,
+                key: index,
+              }))}
               pagination={false}
               className="mt-4"
             />
           </Card>
 
           {/* Revealed Products (if any) */}
-          {preorderDetails.items.some(item => item.products && item.products.length > 0) && (
+          {preorderDetails.items.some(
+            (item) => item.products && item.products.length > 0
+          ) && (
             <Card className="mb-6">
               <Title level={4}>Revealed Products</Title>
-              {preorderDetails.items.map((item, itemIndex) => (
-                item.products && item.products.length > 0 && (
-                  <div key={`item-${itemIndex}`} className="mb-6">
-                    <div className="bg-gray-50 p-3 mb-3 rounded">
-                      <Text strong>{item.blindboxSeries.seriesName}</Text>
-                      <Text className="ml-2">({item.quantity} {item.productType.toLowerCase()})</Text>
+              {preorderDetails.items.map(
+                (item, itemIndex) =>
+                  item.products &&
+                  item.products.length > 0 && (
+                    <div key={`item-${itemIndex}`} className="mb-6">
+                      <div className="bg-gray-50 p-3 mb-3 rounded">
+                        <Text strong>{item.blindboxSeries.seriesName}</Text>
+                        <Text className="ml-2">
+                          ({item.quantity} {item.productType.toLowerCase()})
+                        </Text>
+                      </div>
+                      <Table
+                        columns={productColumns}
+                        dataSource={item.products.map(
+                          (product, productIndex) => ({
+                            ...product,
+                            key: `${itemIndex}-${productIndex}`,
+                          })
+                        )}
+                        pagination={false}
+                        size="small"
+                      />
                     </div>
-                    <Table
-                      columns={productColumns}
-                      dataSource={item.products.map((product, productIndex) => ({...product, key: `${itemIndex}-${productIndex}`}))}
-                      pagination={false}
-                      size="small"
-                    />
-                  </div>
-                )
-              ))}
+                  )
+              )}
             </Card>
           )}
 
@@ -574,7 +611,10 @@ const PreorderDetailsPage = () => {
             <Title level={4}>Payment History</Title>
             <Table
               columns={paymentColumns}
-              dataSource={preorderDetails.payments.map((payment, index) => ({...payment, key: index}))}
+              dataSource={preorderDetails.payments.map((payment, index) => ({
+                ...payment,
+                key: index,
+              }))}
               pagination={false}
               className="mt-4"
             />
@@ -586,80 +626,97 @@ const PreorderDetailsPage = () => {
           <Card className="preorder-summary-card mb-6">
             <Title level={4}>Payment Summary</Title>
             <Divider />
-            
+
             {/* Payment progress */}
             <div className="mb-4">
               <div className="flex justify-between mb-2">
                 <Text>Payment Progress</Text>
                 <Text strong>{paymentProgress.toFixed(0)}%</Text>
               </div>
-              <Progress 
-                percent={paymentProgress} 
+              <Progress
+                percent={paymentProgress}
                 status={
-                  preorderDetails.preorderStatus === "CANCELLED" || preorderDetails.preorderStatus === "EXPIRED" 
-                    ? "exception" 
-                    : paymentProgress >= 100 
-                      ? "success" 
-                      : "active"
+                  preorderDetails.preorderStatus === "CANCELLED" ||
+                  preorderDetails.preorderStatus === "EXPIRED"
+                    ? "exception"
+                    : paymentProgress >= 100
+                    ? "success"
+                    : "active"
                 }
                 showInfo={false}
               />
             </div>
-            
+
             <div className="payment-summary-row">
               <Text>Estimated Total:</Text>
-              <Text>{Number(preorderDetails.estimatedTotalAmount).toLocaleString()} ₫</Text>
+              <Text>
+                {Number(preorderDetails.estimatedTotalAmount).toLocaleString()}{" "}
+                ₫
+              </Text>
             </div>
-            
+
             <div className="payment-summary-row">
               <Text>Total Amount:</Text>
               <Text strong className="text-red-600">
                 {Number(preorderDetails.totalAmount).toLocaleString()} ₫
               </Text>
             </div>
-            
+
             <div className="payment-summary-row">
               <Text>Deposit Amount (50%):</Text>
-              <Text>{Number(preorderDetails.depositAmount).toLocaleString()} ₫</Text>
+              <Text>
+                {Number(preorderDetails.depositAmount).toLocaleString()} ₫
+              </Text>
             </div>
-            
+
             <div className="payment-summary-row">
               <Text>Remaining Amount:</Text>
-              <Text>{Number(preorderDetails.remainingAmount).toLocaleString()} ₫</Text>
+              <Text>
+                {Number(preorderDetails.remainingAmount).toLocaleString()} ₫
+              </Text>
             </div>
-            
+
             <div className="payment-summary-row">
               <Text strong>Amount Paid:</Text>
               <Text strong className="text-green-600">
                 {Number(totalPaid).toLocaleString()} ₫
               </Text>
             </div>
-            
+
             <div className="payment-summary-row">
               <Text strong>Balance Due:</Text>
-              <Text strong className={totalPayable - totalPaid > 0 ? "text-red-600" : "text-green-600"}>
-                {Number(Math.max(0, totalPayable - totalPaid)).toLocaleString()} ₫
+              <Text
+                strong
+                className={
+                  totalPayable - totalPaid > 0
+                    ? "text-red-600"
+                    : "text-green-600"
+                }
+              >
+                {Number(Math.max(0, totalPayable - totalPaid)).toLocaleString()}{" "}
+                ₫
               </Text>
             </div>
-            
+
             <Divider />
-            
+
             {/* Payment actions */}
-            {preorderDetails.preorderStatus === "PENDING" && totalPayable > totalPaid && (
-              <Button 
-                type="primary" 
-                block 
-                size="large"
-                className="mt-2 bg-red-600 hover:bg-red-700 h-12"
-                icon={<CreditCardOutlined />}
-                onClick={() => navigate("/checkout")}
-              >
-                Make Payment
-              </Button>
-            )}
-            
-            <Button 
-              block 
+            {preorderDetails.preorderStatus === "PENDING" &&
+              totalPayable > totalPaid && (
+                <Button
+                  type="primary"
+                  block
+                  size="large"
+                  className="mt-2 bg-red-600 hover:bg-red-700 h-12"
+                  icon={<CreditCardOutlined />}
+                  onClick={() => navigate("/checkout")}
+                >
+                  Make Payment
+                </Button>
+              )}
+
+            <Button
+              block
               size="large"
               className="mt-4 h-12"
               icon={<ShoppingOutlined />}
@@ -681,20 +738,38 @@ const PreorderDetailsPage = () => {
                     <>
                       <Text strong>Preorder Created</Text>
                       <div>
-                        <Text type="secondary">{formatDate(preorderDetails.createdAt)}</Text>
+                        <Text type="secondary">
+                          {formatDate(preorderDetails.createdAt)}
+                        </Text>
                       </div>
                     </>
                   ),
                 },
                 {
-                  dot: <Badge status={preorderDetails.payments.some(p => p.deposit && p.status === "COMPLETED") ? "success" : "wait"} />,
+                  dot: (
+                    <Badge
+                      status={
+                        preorderDetails.payments.some(
+                          (p) => p.deposit && p.status === "COMPLETED"
+                        )
+                          ? "success"
+                          : "wait"
+                      }
+                    />
+                  ),
                   children: (
                     <>
                       <Text strong>Deposit Payment</Text>
                       <div>
                         <Text type="secondary">
-                          {preorderDetails.payments.some(p => p.deposit && p.status === "COMPLETED")
-                            ? formatDate(preorderDetails.payments.find(p => p.deposit && p.status === "COMPLETED")?.issuedAt)
+                          {preorderDetails.payments.some(
+                            (p) => p.deposit && p.status === "COMPLETED"
+                          )
+                            ? formatDate(
+                                preorderDetails.payments.find(
+                                  (p) => p.deposit && p.status === "COMPLETED"
+                                )?.issuedAt
+                              )
                             : "Pending"}
                         </Text>
                       </div>
@@ -702,14 +777,31 @@ const PreorderDetailsPage = () => {
                   ),
                 },
                 {
-                  dot: <Badge status={preorderDetails.preorderStatus === "PAID" || preorderDetails.preorderStatus === "PROCESSING" || preorderDetails.preorderStatus === "SHIPPING" || preorderDetails.preorderStatus === "COMPLETED" ? "success" : "wait"} />,
+                  dot: (
+                    <Badge
+                      status={
+                        preorderDetails.preorderStatus === "PAID" ||
+                        preorderDetails.preorderStatus === "PROCESSING" ||
+                        preorderDetails.preorderStatus === "SHIPPING" ||
+                        preorderDetails.preorderStatus === "COMPLETED"
+                          ? "success"
+                          : "wait"
+                      }
+                    />
+                  ),
                   children: (
                     <>
                       <Text strong>Final Payment</Text>
                       <div>
                         <Text type="secondary">
-                          {preorderDetails.payments.some(p => !p.deposit && p.status === "COMPLETED")
-                            ? formatDate(preorderDetails.payments.find(p => !p.deposit && p.status === "COMPLETED")?.issuedAt)
+                          {preorderDetails.payments.some(
+                            (p) => !p.deposit && p.status === "COMPLETED"
+                          )
+                            ? formatDate(
+                                preorderDetails.payments.find(
+                                  (p) => !p.deposit && p.status === "COMPLETED"
+                                )?.issuedAt
+                              )
                             : "Pending"}
                         </Text>
                       </div>
@@ -717,13 +809,23 @@ const PreorderDetailsPage = () => {
                   ),
                 },
                 {
-                  dot: <Badge status={preorderDetails.preorderStatus === "SHIPPING" || preorderDetails.preorderStatus === "COMPLETED" ? "success" : "wait"} />,
+                  dot: (
+                    <Badge
+                      status={
+                        preorderDetails.preorderStatus === "SHIPPING" ||
+                        preorderDetails.preorderStatus === "COMPLETED"
+                          ? "success"
+                          : "wait"
+                      }
+                    />
+                  ),
                   children: (
                     <>
                       <Text strong>Shipping</Text>
                       <div>
                         <Text type="secondary">
-                          {preorderDetails.preorderStatus === "SHIPPING" || preorderDetails.preorderStatus === "COMPLETED"
+                          {preorderDetails.preorderStatus === "SHIPPING" ||
+                          preorderDetails.preorderStatus === "COMPLETED"
                             ? "Your order has been shipped"
                             : "Pending"}
                         </Text>
@@ -732,11 +834,23 @@ const PreorderDetailsPage = () => {
                   ),
                 },
                 {
-                  dot: <Badge status={preorderDetails.preorderStatus === "COMPLETED" ? "success" : preorderDetails.preorderStatus === "CANCELLED" || preorderDetails.preorderStatus === "EXPIRED" ? "error" : "wait"} />,
+                  dot: (
+                    <Badge
+                      status={
+                        preorderDetails.preorderStatus === "COMPLETED"
+                          ? "success"
+                          : preorderDetails.preorderStatus === "CANCELLED" ||
+                            preorderDetails.preorderStatus === "EXPIRED"
+                          ? "error"
+                          : "wait"
+                      }
+                    />
+                  ),
                   children: (
                     <>
                       <Text strong>
-                        {preorderDetails.preorderStatus === "CANCELLED" || preorderDetails.preorderStatus === "EXPIRED"
+                        {preorderDetails.preorderStatus === "CANCELLED" ||
+                        preorderDetails.preorderStatus === "EXPIRED"
                           ? "Order Cancelled"
                           : "Delivery Completed"}
                       </Text>
@@ -744,9 +858,10 @@ const PreorderDetailsPage = () => {
                         <Text type="secondary">
                           {preorderDetails.preorderStatus === "COMPLETED"
                             ? "Your order has been delivered"
-                            : preorderDetails.preorderStatus === "CANCELLED" || preorderDetails.preorderStatus === "EXPIRED"
-                              ? "Your order was cancelled"
-                              : "Pending"}
+                            : preorderDetails.preorderStatus === "CANCELLED" ||
+                              preorderDetails.preorderStatus === "EXPIRED"
+                            ? "Your order was cancelled"
+                            : "Pending"}
                         </Text>
                       </div>
                     </>
@@ -760,7 +875,8 @@ const PreorderDetailsPage = () => {
           <Card>
             <Title level={4}>Need Help?</Title>
             <Paragraph>
-              If you have any questions or need assistance with your preorder, please contact our customer support.
+              If you have any questions or need assistance with your preorder,
+              please contact our customer support.
             </Paragraph>
             <div className="grid grid-cols-1 gap-4">
               <Button type="default" icon={<InfoCircleOutlined />} block>

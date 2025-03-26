@@ -563,10 +563,10 @@ const BlindboxDetailPage = () => {
                 className="item-card"
                 cover={
                   <div className="item-image-container">
-                    {item.imageUrls && item.imageUrls.length > 0 ? (
+                    {item.imageUrl && item.imageUrl.length > 0 ? (
                       <img
                         alt={item.itemName}
-                        src={item.imageUrls[0]}
+                        src={item.imageUrl}
                         className="item-image"
                       />
                     ) : (
